@@ -30,7 +30,7 @@ env:
 
 jobs:
   benchmark:
-    runs-on: [self-hosted, gpu]
+    runs-on: [self-hosted, gpu, a100]
     name: GPU benchmark (${{ inputs.size || 'MEDIUM' }})
 
     steps:
