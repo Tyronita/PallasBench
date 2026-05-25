@@ -13,10 +13,12 @@ import json
 import os
 import sys
 from datetime import datetime
+from functools import wraps
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import jax
+from jax.experimental import pallas as pl
 
 from pallasbench.benchmark import evaluate_kernel
 from pallasbench.metrics import results_summary
@@ -76,6 +78,16 @@ def main():
     print(f"Size: {args.size}")
     if args.interpret:
         print("Mode: interpret=True (CPU emulation)")
+        if not getattr(pl.pallas_call, "_pallasbench_interpret_default", False):
+            original_pallas_call = pl.pallas_call
+
+            @wraps(original_pallas_call)
+            def interpret_default(*call_args, **call_kwargs):
+                call_kwargs.setdefault("interpret", True)
+                return original_pallas_call(*call_args, **call_kwargs)
+
+            interpret_default._pallasbench_interpret_default = True
+            pl.pallas_call = interpret_default
     if args.correctness_only:
         print("Mode: correctness-only (no timing)")
     print()
@@ -108,6 +120,8 @@ def main():
             n_correctness=5,
             n_warmup=n_warmup,
             n_trials=n_trials,
+            input_dtypes=task.get("input_dtypes"),
+            input_ranges=task.get("input_ranges"),
         )
         results.append(result)
         status = "PASS" if result.correct else "FAIL"

@@ -12,7 +12,7 @@ from jax.experimental import pallas as pl
 def _rmsnorm_kernel(x_ref, o_ref):
     x = x_ref[...]
     ms = jnp.mean(x ** 2, axis=-1, keepdims=True)
-    o_ref[...] = x * jnp.rsqrt(ms + 1e-5)
+    o_ref[...] = x * jax.lax.rsqrt(ms + 1e-5)
 
 
 def pallas_rmsnorm(x: jax.Array) -> jax.Array:

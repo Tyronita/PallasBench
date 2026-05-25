@@ -134,7 +134,7 @@ def jax_multiply(x: jax.Array, y: jax.Array) -> jax.Array:
 
 @jax.jit
 def jax_rsqrt(x: jax.Array) -> jax.Array:
-    return jnp.rsqrt(x + 1e-5)
+    return jax.lax.rsqrt(x + 1e-5)
 
 
 @jax.jit
@@ -329,7 +329,7 @@ def jax_transformer_block(
     d_head = wq.shape[-1]
     # Pre-norm
     ms = jnp.mean(x ** 2, axis=-1, keepdims=True)
-    x_norm = x * jnp.rsqrt(ms + 1e-5)
+    x_norm = x * jax.lax.rsqrt(ms + 1e-5)
     # Attention
     q = x_norm @ wq
     k = x_norm @ wk
@@ -341,6 +341,6 @@ def jax_transformer_block(
     # Residual + MLP
     h = x + attn_proj
     ms2 = jnp.mean(h ** 2, axis=-1, keepdims=True)
-    h_norm = h * jnp.rsqrt(ms2 + 1e-5)
+    h_norm = h * jax.lax.rsqrt(ms2 + 1e-5)
     ff = jnp.maximum(h_norm @ w_ff, 0)
     return h + ff

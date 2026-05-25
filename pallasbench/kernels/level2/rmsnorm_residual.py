@@ -13,7 +13,7 @@ def _rmsnorm_residual_kernel(x_ref, residual_ref, o_ref):
     x = x_ref[...]
     residual = residual_ref[...]
     ms = jnp.mean(x ** 2, axis=-1, keepdims=True)
-    normed = x * jnp.rsqrt(ms + 1e-5)
+    normed = x * jax.lax.rsqrt(ms + 1e-5)
     o_ref[...] = normed + residual
 
 

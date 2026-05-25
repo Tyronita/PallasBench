@@ -29,12 +29,50 @@ def generate_inputs(
     shapes: Sequence[tuple[int, ...]],
     dtype: str = "float32",
     seed: int = 0,
+    dtypes: Sequence[str] | None = None,
+    ranges: Sequence[tuple[float, float] | None] | None = None,
 ) -> list[jax.Array]:
     key = jax.random.PRNGKey(seed)
     inputs = []
+    dtype_list = list(dtypes) if dtypes is not None else [dtype] * len(shapes)
+    range_list = list(ranges) if ranges is not None else [None] * len(shapes)
+    if len(dtype_list) != len(shapes):
+        raise ValueError("Number of dtypes must match number of shapes")
+    if len(range_list) != len(shapes):
+        raise ValueError("Number of ranges must match number of shapes")
     for shape in shapes:
         key, subkey = jax.random.split(key)
-        inputs.append(jax.random.normal(subkey, shape, dtype=dtype))
+        current_dtype = dtype_list[len(inputs)]
+        range_spec = range_list[len(inputs)]
+        jnp_dtype = jnp.dtype(current_dtype)
+        if np.issubdtype(jnp_dtype, np.bool_):
+            sample = jax.random.bernoulli(subkey, 0.5, shape).astype(jnp_dtype)
+        elif np.issubdtype(jnp_dtype, np.integer):
+            if range_spec is not None:
+                low, high = range_spec
+                sample = jax.random.randint(
+                    subkey,
+                    shape,
+                    int(low),
+                    max(int(high), int(low) + 1),
+                    dtype=jnp_dtype,
+                )
+            else:
+                upper = max(shape[-1] if shape else 1, 2)
+                sample = jax.random.randint(subkey, shape, 0, upper, dtype=jnp_dtype)
+        else:
+            if range_spec is not None:
+                low, high = range_spec
+                sample = jax.random.uniform(
+                    subkey,
+                    shape,
+                    dtype=jnp_dtype,
+                    minval=low,
+                    maxval=high,
+                )
+            else:
+                sample = jax.random.normal(subkey, shape, dtype=jnp_dtype)
+        inputs.append(sample)
     return inputs
 
 
@@ -46,10 +84,18 @@ def check_correctness(
     n_checks: int = 5,
     atol: float = 1e-3,
     rtol: float = 1e-3,
+    input_dtypes: Sequence[str] | None = None,
+    input_ranges: Sequence[tuple[float, float] | None] | None = None,
 ) -> tuple[bool, list[str]]:
     errors = []
     for seed in range(n_checks):
-        inputs = generate_inputs(input_shapes, dtype=dtype, seed=seed)
+        inputs = generate_inputs(
+            input_shapes,
+            dtype=dtype,
+            seed=seed,
+            dtypes=input_dtypes,
+            ranges=input_ranges,
+        )
         try:
             out_pallas = pallas_fn(*inputs)
             jax.block_until_ready(out_pallas)

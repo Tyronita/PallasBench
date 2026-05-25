@@ -16,7 +16,7 @@ def _transformer_block_kernel(x_ref, wq_ref, wk_ref, wv_ref, wo_ref, w_ff_ref, o
 
     # Pre-norm (RMSNorm)
     ms = jnp.mean(x ** 2, axis=-1, keepdims=True)
-    x_norm = x * jnp.rsqrt(ms + 1e-5)
+    x_norm = x * jax.lax.rsqrt(ms + 1e-5)
 
     # Self-attention
     q = x_norm @ wq_ref[...]
@@ -31,7 +31,7 @@ def _transformer_block_kernel(x_ref, wq_ref, wk_ref, wv_ref, wo_ref, w_ff_ref, o
     # Residual + MLP
     h = x + attn_proj
     ms2 = jnp.mean(h ** 2, axis=-1, keepdims=True)
-    h_norm = h * jnp.rsqrt(ms2 + 1e-5)
+    h_norm = h * jax.lax.rsqrt(ms2 + 1e-5)
     ff = jnp.maximum(h_norm @ w_ff_ref[...], 0)
 
     o_ref[...] = h + ff

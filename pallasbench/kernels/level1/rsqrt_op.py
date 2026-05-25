@@ -1,15 +1,14 @@
 """Level 1: Elementwise reciprocal square root via Pallas.
 
-Provenance: jnp.rsqrt / jax.lax.rsqrt, critical in normalization layers
+Provenance: jax.lax.rsqrt, critical in normalization layers
 """
 
 import jax
-import jax.numpy as jnp
 from jax.experimental import pallas as pl
 
 
 def _rsqrt_kernel(x_ref, o_ref):
-    o_ref[...] = jnp.rsqrt(x_ref[...] + 1e-5)
+    o_ref[...] = jax.lax.rsqrt(x_ref[...] + 1e-5)
 
 
 def pallas_rsqrt(x: jax.Array) -> jax.Array:

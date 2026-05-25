@@ -59,10 +59,10 @@ TASK_REGISTRY: list[dict] = [
 
     # --- Elementwise ---
     {"name": "L1/exp",      "level": 1, "category": "elementwise", "pallas_fn": exp_op.pallas_kernel,      "baseline_fn": jax_baseline.jax_exp,      "input_shapes": exp_op.input_shapes},
-    {"name": "L1/log",      "level": 1, "category": "elementwise", "pallas_fn": log_op.pallas_kernel,      "baseline_fn": jax_baseline.jax_log,      "input_shapes": log_op.input_shapes},
+    {"name": "L1/log",      "level": 1, "category": "elementwise", "pallas_fn": log_op.pallas_kernel,      "baseline_fn": jax_baseline.jax_log,      "input_shapes": log_op.input_shapes,      "input_ranges": [(0.1, 5.0)]},
     {"name": "L1/add",      "level": 1, "category": "elementwise", "pallas_fn": add_op.pallas_kernel,      "baseline_fn": jax_baseline.jax_add,      "input_shapes": add_op.input_shapes},
     {"name": "L1/multiply", "level": 1, "category": "elementwise", "pallas_fn": multiply_op.pallas_kernel, "baseline_fn": jax_baseline.jax_multiply, "input_shapes": multiply_op.input_shapes},
-    {"name": "L1/rsqrt",    "level": 1, "category": "elementwise", "pallas_fn": rsqrt_op.pallas_kernel,    "baseline_fn": jax_baseline.jax_rsqrt,    "input_shapes": rsqrt_op.input_shapes},
+    {"name": "L1/rsqrt",    "level": 1, "category": "elementwise", "pallas_fn": rsqrt_op.pallas_kernel,    "baseline_fn": jax_baseline.jax_rsqrt,    "input_shapes": rsqrt_op.input_shapes,    "input_ranges": [(0.1, 5.0)]},
     {"name": "L1/clamp",    "level": 1, "category": "elementwise", "pallas_fn": clamp.pallas_kernel,       "baseline_fn": jax_baseline.jax_clamp,    "input_shapes": clamp.input_shapes},
 
     # --- Loss ---
@@ -71,11 +71,11 @@ TASK_REGISTRY: list[dict] = [
     {"name": "L1/cosine_sim",    "level": 1, "category": "loss", "pallas_fn": cosine_sim.pallas_kernel,    "baseline_fn": jax_baseline.jax_cosine_sim,    "input_shapes": cosine_sim.input_shapes},
 
     # --- Index ---
-    {"name": "L1/embedding_lookup", "level": 1, "category": "index", "pallas_fn": embedding_lookup.pallas_kernel, "baseline_fn": jax_baseline.jax_embedding_lookup, "input_shapes": embedding_lookup.input_shapes},
-    {"name": "L1/one_hot",          "level": 1, "category": "index", "pallas_fn": one_hot.pallas_kernel,          "baseline_fn": jax_baseline.jax_one_hot,          "input_shapes": one_hot.input_shapes},
+    {"name": "L1/embedding_lookup", "level": 1, "category": "index", "pallas_fn": embedding_lookup.pallas_kernel, "baseline_fn": jax_baseline.jax_embedding_lookup, "input_shapes": embedding_lookup.input_shapes, "input_dtypes": ["float32", "int32"]},
+    {"name": "L1/one_hot",          "level": 1, "category": "index", "pallas_fn": one_hot.pallas_kernel,          "baseline_fn": jax_baseline.jax_one_hot,          "input_shapes": one_hot.input_shapes, "input_dtypes": ["int32"]},
 
     # --- Genomics ---
-    {"name": "L1/nucleotide_onehot", "level": 1, "category": "genomics", "pallas_fn": nucleotide_onehot.pallas_kernel, "baseline_fn": jax_baseline.jax_nucleotide_onehot, "input_shapes": nucleotide_onehot.input_shapes},
+    {"name": "L1/nucleotide_onehot", "level": 1, "category": "genomics", "pallas_fn": nucleotide_onehot.pallas_kernel, "baseline_fn": jax_baseline.jax_nucleotide_onehot, "input_shapes": nucleotide_onehot.input_shapes, "input_dtypes": ["int32"]},
 
     # =========================================================================
     # Level 2: Fusion patterns

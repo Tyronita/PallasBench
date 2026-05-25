@@ -23,6 +23,8 @@ def evaluate_kernel(
     n_trials: int = 100,
     atol: float = 1e-3,
     rtol: float = 1e-3,
+    input_dtypes: Sequence[str] | None = None,
+    input_ranges: Sequence[tuple[float, float] | None] | None = None,
 ) -> BenchmarkResult:
     correct, errors = check_correctness(
         pallas_fn=pallas_fn,
@@ -32,9 +34,17 @@ def evaluate_kernel(
         n_checks=n_correctness,
         atol=atol,
         rtol=rtol,
+        input_dtypes=input_dtypes,
+        input_ranges=input_ranges,
     )
 
-    inputs = generate_inputs(input_shapes, dtype=dtype, seed=42)
+    inputs = generate_inputs(
+        input_shapes,
+        dtype=dtype,
+        seed=42,
+        dtypes=input_dtypes,
+        ranges=input_ranges,
+    )
     baseline_time = time_fn(baseline_fn, inputs, n_warmup=n_warmup, n_trials=n_trials)
     kernel_time = time_fn(pallas_fn, inputs, n_warmup=n_warmup, n_trials=n_trials)
 
@@ -67,6 +77,8 @@ def evaluate_suite(
             n_correctness=n_correctness,
             n_warmup=n_warmup,
             n_trials=n_trials,
+            input_dtypes=task.get("input_dtypes"),
+            input_ranges=task.get("input_ranges"),
         )
         results.append(result)
         status = "PASS" if result.correct else "FAIL"
