@@ -1,11 +1,12 @@
 name: TPU Performance Benchmark
 
 on:
-  push:
-    branches: [main, master]
-    paths:
-      - 'pallasbench/kernels/**'
-      - 'pallasbench/baselines/**'
+  # Disabled until a TPU self-hosted runner is available (see #1)
+  # push:
+  #   branches: [main, master]
+  #   paths:
+  #     - 'pallasbench/kernels/**'
+  #     - 'pallasbench/baselines/**'
   workflow_dispatch:
     inputs:
       size:
