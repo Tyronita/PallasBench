@@ -4,6 +4,11 @@ Provenance: AI-Hypercomputer/maxtext Llama/Gemma model architecture
              Standard pre-norm transformer block pattern
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L3/transformer_block", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

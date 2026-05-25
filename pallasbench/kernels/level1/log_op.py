@@ -3,6 +3,11 @@
 Provenance: jnp.log, used in cross-entropy loss and log-softmax
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/log", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

@@ -4,6 +4,10 @@ Demonstrates: squared-mean reduction, rsqrt pattern.
 Inspired by pallas-forge's RMSNorm kernel (3.44x over XLA).
 """
 
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/rmsnorm", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

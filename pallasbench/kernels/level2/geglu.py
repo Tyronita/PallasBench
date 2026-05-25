@@ -3,6 +3,11 @@
 Provenance: variant of gated linear unit, used in PaLM/Gemma MLPs
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L2/geglu", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

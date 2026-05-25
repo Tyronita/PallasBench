@@ -4,6 +4,10 @@ Demonstrates: 2D grid, BlockSpec with K-dimension accumulation,
 multi-block tiling pattern from the Pallas quickstart.
 """
 
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/matmul", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

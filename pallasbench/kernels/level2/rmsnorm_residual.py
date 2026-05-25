@@ -4,6 +4,11 @@ Demonstrates: two-input fusion, norm + elementwise add in one kernel.
 Inspired by pallas-forge's 3.44x speedup over XLA for this pattern.
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L2/rmsnorm_residual", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

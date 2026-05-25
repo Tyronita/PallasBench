@@ -4,6 +4,11 @@ Provenance: openxla/tokamax gated_linear_unit
              AI-Hypercomputer/maxtext Llama/Gemma MLP blocks
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L3/gated_mlp", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

@@ -4,6 +4,11 @@ Demonstrates: reductions within a block, numerical stability (max subtraction),
 multi-pass pattern (max -> subtract -> exp -> sum -> divide).
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/softmax", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

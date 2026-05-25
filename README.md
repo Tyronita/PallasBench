@@ -43,53 +43,53 @@ Every PallasBench task traces to an official or well-documented source. This tab
 | Task | Source | Domain |
 |------|--------|--------|
 | **Level 1: Single Operators (28 tasks)** | | |
-| `L1/relu` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — Pallas quickstart | JAX Core |
-| `L1/gelu` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — transcendental kernel | JAX Core |
-| `L1/silu` | [openxla/tokamax](https://github.com/openxla/tokamax) — gated_linear_unit SiLU gate | OpenXLA |
-| `L1/sigmoid` | [jax-ml/jax](https://jax.readthedocs.io/en/latest/_autosummary/jax.nn.sigmoid.html) | JAX Core |
-| `L1/tanh` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — GELU building block | JAX Core |
-| `L1/layernorm` | [openxla/tokamax](https://github.com/openxla/tokamax) — tokamax.layer_norm | OpenXLA |
-| `L1/rmsnorm` | [pallas-forge](https://github.com/linhkid/pallas-forge) — 3.44x over XLA | Community |
-| `L1/matmul` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/tpu/matmul.html) — TPU matmul tutorial | JAX Core |
-| `L1/batched_matmul` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/tpu/matmul.html) — batch dims for MHA | JAX Core |
-| `L1/outer_product` | [google-deepmind/alphafold3](https://github.com/google-deepmind/alphafold3) — Evoformer | Scientific AI |
-| `L1/reduce_sum` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — reduction pattern | JAX Core |
-| `L1/reduce_max` | [jax-ml/jax](https://github.com/jax-ml/jax/issues/34620) — tested against TPU issue | JAX Core |
-| `L1/reduce_mean` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — normalization prereq | JAX Core |
-| `L1/softmax` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — numerically stable | JAX Core |
-| `L1/log_softmax` | [openxla/tokamax](https://github.com/openxla/tokamax) — cross-entropy component | OpenXLA |
-| `L1/exp` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — transcendental | JAX Core |
-| `L1/log` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — loss functions | JAX Core |
-| `L1/add` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — residual pattern | JAX Core |
-| `L1/multiply` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — gating/scaling | JAX Core |
-| `L1/rsqrt` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — normalization core | JAX Core |
-| `L1/clamp` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — gradient clipping | JAX Core |
-| `L1/cross_entropy` | [openxla/tokamax](https://github.com/openxla/tokamax) — cross-entropy loss | OpenXLA |
-| `L1/mse_loss` | [jax-ml/jax](https://jax.readthedocs.io/en/latest/jax.numpy.html) — regression loss | JAX Core |
-| `L1/cosine_sim` | [jax-ml/jax](https://jax.readthedocs.io/en/latest/jax.numpy.html) — embedding similarity | JAX Core |
-| `L1/embedding_lookup` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/tpu/sparsecore.html) — SparseCore gather | JAX Core |
-| `L1/one_hot` | [jax-ml/jax](https://jax.readthedocs.io/en/latest/_autosummary/jax.nn.one_hot.html) — label prep | JAX Core |
-| `L1/nucleotide_onehot` | [google-deepmind/deepmind-research](https://deepwiki.com/google-deepmind/deepmind-research/2.6-enformer) — Enformer DNA encoding | Genomics |
+| `L1/relu` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — Pallas quickstart | JAX Core |
+| `L1/gelu` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — transcendental kernel | JAX Core |
+| `L1/silu` | [openxla/tokamax · gated_linear_unit/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/gated_linear_unit/api.py) — SiLU gate | OpenXLA |
+| `L1/sigmoid` | [jax-ml/jax · nn/functions.py](https://github.com/jax-ml/jax/blob/main/jax/_src/nn/functions.py) | JAX Core |
+| `L1/tanh` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — GELU building block | JAX Core |
+| `L1/layernorm` | [openxla/tokamax · normalization/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/normalization/api.py) — layer_norm | OpenXLA |
+| `L1/rmsnorm` | [pallas-forge · kernels/rmsnorm.py](https://github.com/linhkid/pallas-forge/blob/main/pallas_forge/kernels/rmsnorm.py) — 3.44x over XLA | Community |
+| `L1/matmul` | [jax-ml/jax · tpu/matmul.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/tpu/matmul.ipynb) — TPU matmul tutorial | JAX Core |
+| `L1/batched_matmul` | [jax-ml/jax · tpu/matmul.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/tpu/matmul.ipynb) — batch dims for MHA | JAX Core |
+| `L1/outer_product` | [alphafold3 · evoformer.py](https://github.com/google-deepmind/alphafold3/blob/main/src/alphafold3/model/network/evoformer.py) — outer product mean | Scientific AI |
+| `L1/reduce_sum` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — reduction pattern | JAX Core |
+| `L1/reduce_max` | [jax-ml/jax · issue #34620](https://github.com/jax-ml/jax/issues/34620) — tested against TPU issue | JAX Core |
+| `L1/reduce_mean` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — normalization prereq | JAX Core |
+| `L1/softmax` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — numerically stable | JAX Core |
+| `L1/log_softmax` | [openxla/tokamax · cross_entropy_loss/reference.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/linear_softmax_cross_entropy_loss/reference.py) — log-softmax | OpenXLA |
+| `L1/exp` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — transcendental | JAX Core |
+| `L1/log` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — loss functions | JAX Core |
+| `L1/add` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — residual pattern | JAX Core |
+| `L1/multiply` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — gating/scaling | JAX Core |
+| `L1/rsqrt` | [jax-ml/jax · lax/lax.py](https://github.com/jax-ml/jax/blob/main/jax/_src/lax/lax.py) — normalization core | JAX Core |
+| `L1/clamp` | [jax-ml/jax · quickstart.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/quickstart.ipynb) — gradient clipping | JAX Core |
+| `L1/cross_entropy` | [openxla/tokamax · cross_entropy_loss/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/linear_softmax_cross_entropy_loss/api.py) — cross-entropy | OpenXLA |
+| `L1/mse_loss` | [jax-ml/jax · numpy/lax_numpy.py](https://github.com/jax-ml/jax/blob/main/jax/_src/numpy/lax_numpy.py) — regression loss | JAX Core |
+| `L1/cosine_sim` | [jax-ml/jax · nn/functions.py](https://github.com/jax-ml/jax/blob/main/jax/_src/nn/functions.py) — embedding similarity | JAX Core |
+| `L1/embedding_lookup` | [jax-ml/jax · tpu/sparsecore.ipynb](https://github.com/jax-ml/jax/blob/main/docs/pallas/tpu/sparsecore.ipynb) — SparseCore gather | JAX Core |
+| `L1/one_hot` | [jax-ml/jax · nn/functions.py](https://github.com/jax-ml/jax/blob/main/jax/_src/nn/functions.py) — label prep | JAX Core |
+| `L1/nucleotide_onehot` | [deepmind-research · enformer/enformer.py](https://github.com/google-deepmind/deepmind-research/blob/master/enformer/enformer.py) — DNA encoding | Genomics |
 | **Level 2: Fusion Patterns (13 tasks)** | | |
-| `L2/matmul_relu` | [keras-team/keras-io](https://keras.io/guides/define_custom_kernel/) — FusedDense | Keras |
-| `L2/matmul_gelu` | [keras-team/keras-io](https://keras.io/guides/define_custom_kernel/) — FusedDense+GELU | Keras |
-| `L2/matmul_silu` | [openxla/tokamax](https://github.com/openxla/tokamax) — gated_linear_unit gate | OpenXLA |
-| `L2/rmsnorm_residual` | [pallas-forge](https://github.com/linhkid/pallas-forge) — 3.44x speedup | Community |
-| `L2/layernorm_residual` | [AI-Hypercomputer/maxtext](https://maxtext.readthedocs.io/) — attention blocks | Google AI |
-| `L2/swiglu` | [openxla/tokamax](https://github.com/openxla/tokamax) — gated_linear_unit | OpenXLA |
-| `L2/geglu` | [openxla/tokamax](https://github.com/openxla/tokamax) — PaLM/Gemma variant | OpenXLA |
-| `L2/linear_bias_relu` | [keras-team/keras-io](https://keras.io/guides/define_custom_kernel/) — bias fusion | Keras |
-| `L2/qk_softmax` | [jax-ml/jax](https://github.com/jax-ml/jax/blob/main/jax/experimental/pallas/ops/tpu/flash_attention.py) — QK^T+softmax | JAX Core |
-| `L2/fused_softmax_cross_entropy` | [openxla/tokamax](https://github.com/openxla/tokamax) — linear_softmax_cross_entropy_loss | OpenXLA |
-| `L2/sigmoid_bce` | [jax-ml/jax](https://jax.readthedocs.io/) — numerically stable BCE | JAX Core |
-| `L2/pwm_scan` | [google-deepmind/deepmind-research](https://deepwiki.com/google-deepmind/deepmind-research/2.6-enformer) — Enformer PWM motif scanning | Genomics |
-| `L2/pairwise_distance` | [google-deepmind/alphafold3](https://github.com/google-deepmind/alphafold3) — structural distance maps | Genomics |
+| `L2/matmul_relu` | [keras-io · guides/define_custom_kernel.py](https://github.com/keras-team/keras-io/blob/master/guides/define_custom_kernel.py) — FusedDense | Keras |
+| `L2/matmul_gelu` | [keras-io · guides/define_custom_kernel.py](https://github.com/keras-team/keras-io/blob/master/guides/define_custom_kernel.py) — FusedDense+GELU | Keras |
+| `L2/matmul_silu` | [openxla/tokamax · gated_linear_unit/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/gated_linear_unit/api.py) — gate matmul | OpenXLA |
+| `L2/rmsnorm_residual` | [pallas-forge · kernels/rmsnorm.py](https://github.com/linhkid/pallas-forge/blob/main/pallas_forge/kernels/rmsnorm.py) — 3.44x speedup | Community |
+| `L2/layernorm_residual` | [maxtext · layers/normalizations.py](https://github.com/AI-Hypercomputer/maxtext/blob/main/src/maxtext/layers/normalizations.py) — attention blocks | Google AI |
+| `L2/swiglu` | [openxla/tokamax · gated_linear_unit/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/gated_linear_unit/api.py) — SwiGLU | OpenXLA |
+| `L2/geglu` | [openxla/tokamax · gated_linear_unit/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/gated_linear_unit/api.py) — PaLM/Gemma variant | OpenXLA |
+| `L2/linear_bias_relu` | [keras-io · guides/define_custom_kernel.py](https://github.com/keras-team/keras-io/blob/master/guides/define_custom_kernel.py) — bias fusion | Keras |
+| `L2/qk_softmax` | [jax-ml/jax · flash_attention.py](https://github.com/jax-ml/jax/blob/main/jax/experimental/pallas/ops/tpu/flash_attention.py) — QK^T+softmax | JAX Core |
+| `L2/fused_softmax_cross_entropy` | [openxla/tokamax · cross_entropy_loss/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/linear_softmax_cross_entropy_loss/api.py) — memory efficient | OpenXLA |
+| `L2/sigmoid_bce` | [jax-ml/jax · nn/functions.py](https://github.com/jax-ml/jax/blob/main/jax/_src/nn/functions.py) — numerically stable BCE | JAX Core |
+| `L2/pwm_scan` | [deepmind-research · enformer/enformer.py](https://github.com/google-deepmind/deepmind-research/blob/master/enformer/enformer.py) — PWM motif scanning | Genomics |
+| `L2/pairwise_distance` | [alphafold3 · geometry/vector.py](https://github.com/google-deepmind/alphafold3/blob/main/src/alphafold3/jax/geometry/vector.py) — structural distance maps | Genomics |
 | **Level 3: Architecture Components (5 tasks)** | | |
-| `L3/flash_attention` | [jax-ml/jax](https://github.com/jax-ml/jax/blob/main/jax/experimental/pallas/ops/tpu/flash_attention.py) — official TPU kernel | JAX Core |
-| `L3/multi_head_attention` | [AI-Hypercomputer/maxtext](https://maxtext.readthedocs.io/) — splash attention | Google AI |
-| `L3/gated_mlp` | [openxla/tokamax](https://github.com/openxla/tokamax) — gated_linear_unit full block | OpenXLA |
-| `L3/transformer_block` | [AI-Hypercomputer/maxtext](https://github.com/AI-Hypercomputer/maxtext) — pre-norm block | Google AI |
-| `L3/triangle_update` | [google-deepmind/alphafold3](https://github.com/google-deepmind/alphafold3) — Pairformer triangle multiplication | Genomics |
+| `L3/flash_attention` | [jax-ml/jax · flash_attention.py](https://github.com/jax-ml/jax/blob/main/jax/experimental/pallas/ops/tpu/flash_attention.py) — official TPU kernel | JAX Core |
+| `L3/multi_head_attention` | [maxtext · splash_attention_kernel.py](https://github.com/AI-Hypercomputer/maxtext/blob/main/src/maxtext/kernels/attention/splash_attention_kernel.py) — splash attention | Google AI |
+| `L3/gated_mlp` | [openxla/tokamax · gated_linear_unit/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/gated_linear_unit/api.py) — full block | OpenXLA |
+| `L3/transformer_block` | [maxtext · layers/decoders.py](https://github.com/AI-Hypercomputer/maxtext/blob/main/src/maxtext/layers/decoders.py) — pre-norm block | Google AI |
+| `L3/triangle_update` | [openxla/tokamax · triangle_multiplication/api.py](https://github.com/openxla/tokamax/blob/main/tokamax/_src/ops/triangle_multiplication/api.py) — Pairformer | Genomics |
 
 ### Source Domains
 

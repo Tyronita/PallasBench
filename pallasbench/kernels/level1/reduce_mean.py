@@ -3,6 +3,11 @@
 Provenance: jnp.mean reduction, used in normalization layers
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/reduce_mean", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

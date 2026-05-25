@@ -3,6 +3,11 @@
 Provenance: jax.nn.one_hot, used in cross-entropy label preparation
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/one_hot", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

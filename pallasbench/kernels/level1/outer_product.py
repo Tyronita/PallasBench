@@ -3,6 +3,10 @@
 Provenance: jnp.outer, rank-1 update pattern used in Evoformer/AlphaFold
 """
 
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/outer_product", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

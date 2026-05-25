@@ -3,6 +3,11 @@
 Provenance: standard binary classification loss fusion
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L2/sigmoid_bce", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

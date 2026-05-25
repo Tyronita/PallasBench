@@ -3,6 +3,11 @@
 Provenance: keras-team/keras-io define_custom_kernel guide FusedDense pattern
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L2/matmul_gelu", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

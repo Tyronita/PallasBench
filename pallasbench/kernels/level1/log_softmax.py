@@ -3,6 +3,11 @@
 Provenance: jax.nn.log_softmax, critical for cross-entropy loss computation
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L1/log_softmax", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

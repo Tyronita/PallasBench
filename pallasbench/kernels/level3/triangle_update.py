@@ -12,6 +12,11 @@ Provenance: google-deepmind/alphafold3 Pairformer triangle multiplication
              "Triangle Multiplication Is All You Need" (arXiv:2510.18870)
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L3/triangle_update", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

@@ -10,6 +10,11 @@ memory-efficient tiling, the full Pallas repertoire.
 Reference: jax/experimental/pallas/ops/tpu/flash_attention.py
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L3/flash_attention", __doc__)
+
 from functools import partial
 
 import jax

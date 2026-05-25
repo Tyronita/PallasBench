@@ -3,6 +3,11 @@
 Provenance: standard transformer pre-norm pattern, MaxText attention blocks
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L2/layernorm_residual", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

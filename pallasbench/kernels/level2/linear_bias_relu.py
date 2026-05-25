@@ -3,6 +3,11 @@
 Provenance: keras-team FusedDense pattern, standard MLP first layer
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L2/linear_bias_relu", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl

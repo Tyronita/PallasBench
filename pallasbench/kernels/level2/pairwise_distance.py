@@ -8,6 +8,11 @@ Provenance: google-deepmind/alphafold3 pair representation distance maps
              JAX-MD (arxiv:1912.04232) pairwise distance computation
 """
 
+
+from pallasbench.provenance import describe_task as _describe_task
+
+__doc__ = _describe_task("L2/pairwise_distance", __doc__)
+
 import jax
 import jax.numpy as jnp
 from jax.experimental import pallas as pl
