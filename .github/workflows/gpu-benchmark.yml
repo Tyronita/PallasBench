@@ -27,6 +27,7 @@ env:
   BENCH_SIZE: ${{ inputs.size || 'MEDIUM' }}
   BENCH_LEVELS: ${{ inputs.levels || '1 2 3' }}
   BENCH_ALERT: ${{ inputs.alert_threshold || '150' }}
+  JAX_PALLAS_USE_MOSAIC_GPU: "0"
 
 jobs:
   benchmark:
@@ -43,6 +44,7 @@ jobs:
 
       - name: Install JAX (CUDA)
         run: |
+          pip install absl-py
           pip install -e ".[gpu,dev]"
 
       - name: Verify GPU
