@@ -1,0 +1,48 @@
+name: CPU Correctness (interpret=True)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  correctness:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.11", "3.12"]
+
+    runs-on: ${{ matrix.os }}
+    name: correctness (${{ matrix.os }}, py${{ matrix.python-version }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]"
+
+      - name: Run correctness tests (interpret=True, SMALL size)
+        run: |
+          python scripts/run_benchmark.py \
+            --levels 1 2 3 \
+            --size SMALL \
+            --interpret \
+            --correctness-only \
+            --output-dir results/
+        env:
+          JAX_PLATFORMS: cpu
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: correctness-${{ matrix.os }}-py${{ matrix.python-version }}
+          path: results/*.json

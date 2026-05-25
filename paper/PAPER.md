@@ -6,7 +6,7 @@
 
 ## Abstract
 
-We present PallasBench, a benchmark suite for evaluating the generation and optimization of custom kernels written in Pallas, JAX's hardware-agnostic kernel DSL. While existing benchmarks---KernelBench (250 tasks, CUDA/Triton), KernelBench-X (176 tasks, Triton), and MultiKernelBench (285 tasks, 6 DSLs)---have established evaluation frameworks for GPU kernel generation, Pallas remains critically underserved despite its unique position as the only kernel language targeting both Google TPUs and NVIDIA GPUs from a single Python codebase. PallasBench provides 150 tasks across 3 difficulty levels, a JAX-native evaluation harness, and the `fast_p` metric adapted from KernelBench. We survey the kernel benchmark landscape, analyze why Pallas presents unique challenges for both humans and LLMs, and propose a roadmap for advancing Pallas kernel generation research.
+We present PallasBench, a provenance-traced benchmark suite for evaluating the generation and optimization of custom kernels written in Pallas, JAX's hardware-agnostic kernel DSL. While existing benchmarks---KernelBench (250 tasks, CUDA/Triton), KernelBench-X (176 tasks, Triton), and MultiKernelBench (285 tasks, 6 DSLs)---have established evaluation frameworks for GPU kernel generation, Pallas remains critically underserved despite its unique position as the only kernel language targeting both Google TPUs and NVIDIA GPUs from a single Python codebase. PallasBench v0.2.0 provides 38 implemented tasks across 3 difficulty levels (27 L1, 11 L2, 4 L3), each traced to official sources (jax-ml/jax, openxla/tokamax, AI-Hypercomputer/maxtext, keras-team, pallas-forge, google-deepmind/alphafold3), a JAX-native evaluation harness with the `fast_p` metric from KernelBench, CI/CD GitHub Actions workflows for automated correctness testing and performance regression detection, and parametric benchmark sizes (SMALL/MEDIUM/LARGE) for scaling analysis.
 
 ---
 
@@ -304,33 +304,57 @@ grid = (M // bm, N // bn, K // bk)
 
 ## 7. Roadmap
 
-### Phase 1 (Current): Foundation
-- 11 reference task implementations (Level 1: 8, Level 2: 3, Level 3: 1)
-- Evaluation harness with `fast_p` metric
-- JAX baselines for all tasks
+### 7.1 Task Provenance Methodology
 
-### Phase 2: Full Coverage
-- Expand to all 150 tasks
-- Add TPU-specific variants (VMEM placement, pipeline parallelism)
-- Add GPU-specific variants (WGMMA, async copies, TMA)
+Every PallasBench task is traced to an official or well-documented source, ensuring reproducibility and credibility. Our provenance tracking follows a strict hierarchy:
 
-### Phase 3: LLM Evaluation
-- Evaluate frontier models (Claude, GPT, Gemini, DeepSeek) on PallasBench
-- Implement category-aware prompting (following MultiKernelBench's approach)
-- Publish leaderboard
+1. **JAX Core** (22 tasks): Official Pallas documentation, tutorials, and production kernels from jax-ml/jax
+2. **OpenXLA** (9 tasks): openxla/tokamax production kernel library (layer_norm, gated_linear_unit, ragged_dot, linear_softmax_cross_entropy_loss)
+3. **Keras** (3 tasks): keras-team/keras-io FusedDense custom kernel tutorial
+4. **Google AI** (3 tasks): AI-Hypercomputer/maxtext training framework Pallas kernels
+5. **Community** (2 tasks): pallas-forge auto-tuned kernels with published benchmarks
+6. **Scientific AI** (1 task): google-deepmind/alphafold3 Evoformer outer product patterns
 
-### Phase 4: Community
-- Accept community-submitted optimized kernels
-- Cross-hardware leaderboard (TPU v5e, v6, H100, B200)
-- Integration with KernelBench ecosystem
+The provenance is stored in `pallasbench/provenance.py` and can be queried programmatically via `get_provenance(task_name)`.
+
+### 7.2 CI/CD Architecture
+
+PallasBench includes four GitHub Actions workflows:
+
+**`cpu-correctness.yml`** — runs on every push/PR with `interpret=True` (Pallas CPU emulation). Multi-OS matrix (ubuntu-latest, macos-latest) x multi-Python (3.11, 3.12). No hardware required.
+
+**`gpu-benchmark.yml`** — manual trigger for GPU performance on self-hosted Ampere+ runners. Integrates with `benchmark-action/github-action-benchmark` for regression detection with configurable alert thresholds.
+
+**`tpu-benchmark.yml`** — manual trigger for TPU performance on self-hosted TPU runners (v4-8 through v6-1). Uses `terraform-google-github-actions-runners` for provisioning.
+
+**`ci-scorer.yml`** — posts a score report comment on every PR that touches kernel code, showing fast_0/fast_1/fast_2 metrics.
+
+### 7.3 Parametric Sizing
+
+Each task supports SMALL/MEDIUM/LARGE configurations stored in `pallasbench/sizes.py`:
+- **SMALL**: CI smoke tests (128-512 element dims, <1s per task on CPU)
+- **MEDIUM**: Standard benchmarks (1024-4096 dims, default)
+- **LARGE**: Production-scale stress tests (4096-16384+ dims)
+
+### 7.4 Roadmap
+
+**Phase 1 (Current v0.2.0):** 38 implemented tasks with provenance, CI/CD, parametric sizing
+
+**Phase 2:** Expand to 100+ tasks including convolution, pooling, optimizer steps, RoPE, paged attention
+
+**Phase 3:** LLM evaluation with category-aware prompting, frontier model leaderboard
+
+**Phase 4:** Cross-hardware leaderboard (TPU v5e/v6, H100, B200), community-submitted optimized kernels
 
 ---
 
 ## 8. Conclusion
 
-PallasBench addresses a critical gap in the kernel benchmark landscape. While CUDA and Triton have extensive benchmark coverage, Pallas---the only kernel DSL targeting both TPU and GPU---lacks a dedicated, comprehensive evaluation framework. By providing 150 tasks across 3 difficulty levels, a standardized evaluation harness, and analysis of Pallas-specific challenges, PallasBench aims to accelerate research in hardware-agnostic kernel generation.
+PallasBench v0.2.0 addresses a critical gap in the kernel benchmark landscape with 38 provenance-traced tasks, CI/CD integration for automated correctness and performance evaluation, and parametric sizing for scaling analysis. Every task links to official sources across 6 domains: JAX Core, OpenXLA/Tokamax, Keras, MaxText, pallas-forge, and AlphaFold3.
 
-The path forward is clear: as TPUs become more prevalent and Pallas matures from experimental to production status, the ability to generate efficient Pallas kernels---whether by humans or LLMs---will become increasingly important. PallasBench provides the measuring stick.
+Key architectural decisions distinguish PallasBench from prior work: (1) `interpret=True` enables CPU-only correctness testing on standard GitHub Actions runners, making CI/CD practical without TPU/GPU hardware; (2) parametric SMALL/MEDIUM/LARGE sizes enable both quick CI smoke tests and production-scale benchmarking; (3) `benchmark-action/github-action-benchmark` integration provides automated regression detection with alert thresholds and PR comments.
+
+As TPUs become more prevalent and Pallas matures from experimental to production status, the ability to generate efficient Pallas kernels---whether by humans or LLMs---will become increasingly important. PallasBench provides the measuring stick.
 
 ---
 
@@ -365,3 +389,17 @@ The path forward is clear: as TPUs become more prevalent and Pallas matures from
 [14] R. Dyro. "Pallas-Triton kernels and kernel auto-tuning." 2025. https://robertdyro.com/articles/pallas-triton_kernels/
 
 [15] Google. "MaxText: Performance optimizations with Pallas kernels." 2025. https://maxtext.readthedocs.io/en/latest/guides/pallas_kernels_performance.html
+
+[16] OpenXLA Team. "Tokamax: A GPU and TPU kernel library." 2025. https://github.com/openxla/tokamax
+
+[17] Rishiraj et al. "Fused INT8 Weight-Only Quantization in Pallas." Hugging Face Blog, 2026. https://huggingface.co/blog/rishiraj/fused-int8-weight-only-quantization-in-pallas
+
+[18] SGLang Team. "SGLang-Jax: An Open-Source Solution for Native TPU Inference." LMSYS Blog, 2025. https://www.lmsys.org/blog/2025-10-29-sglang-jax/
+
+[19] vLLM Team. "vLLM TPU: A New Unified Backend Supporting PyTorch and JAX on TPU." 2025. https://blog.vllm.ai/2025/10/16/vllm-tpu.html
+
+[20] Ragged Paged Attention Authors. "Ragged Paged Attention: A High-Performance and Flexible LLM Inference Kernel for TPU." arXiv:2604.15464. 2026.
+
+[21] benchmark-action. "github-action-benchmark: GitHub Action for continuous benchmarking." https://github.com/benchmark-action/github-action-benchmark
+
+[22] terraform-google-modules. "terraform-google-github-actions-runners." https://github.com/terraform-google-modules/terraform-google-github-actions-runners

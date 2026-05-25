@@ -4,7 +4,8 @@
 Usage:
     python scripts/run_benchmark.py --levels 1 2 3
     python scripts/run_benchmark.py --levels 1 --category softmax
-    python scripts/run_benchmark.py --levels 1 --fast-p 2.0
+    python scripts/run_benchmark.py --levels 1 2 3 --size SMALL --interpret --correctness-only
+    python scripts/run_benchmark.py --levels 1 2 3 --size LARGE --pytest-benchmark-json results/bench.json
 """
 
 import argparse
@@ -17,9 +18,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import jax
 
-from pallasbench.benchmark import evaluate_suite
+from pallasbench.benchmark import evaluate_kernel
 from pallasbench.metrics import results_summary
 from pallasbench.tasks import get_tasks
+from pallasbench.sizes import get_size_config
 
 
 def main():
@@ -31,6 +33,19 @@ def main():
     parser.add_argument(
         "--category", type=str, default=None,
         help="Filter by task category",
+    )
+    parser.add_argument(
+        "--size", type=str, default="MEDIUM",
+        choices=["SMALL", "MEDIUM", "LARGE"],
+        help="Parametric benchmark size",
+    )
+    parser.add_argument(
+        "--interpret", action="store_true",
+        help="Run with interpret=True for CPU testing",
+    )
+    parser.add_argument(
+        "--correctness-only", action="store_true",
+        help="Only check correctness, skip timing",
     )
     parser.add_argument(
         "--fast-p", type=float, default=1.0,
@@ -48,12 +63,21 @@ def main():
         "--output-dir", type=str, default="results",
         help="Directory for result JSON files",
     )
+    parser.add_argument(
+        "--pytest-benchmark-json", type=str, default=None,
+        help="Output path for benchmark-action compatible JSON",
+    )
     args = parser.parse_args()
 
-    print(f"PallasBench v0.1.0")
+    print(f"PallasBench v0.2.0")
     print(f"Platform: {jax.default_backend()}")
     print(f"Devices: {jax.devices()}")
     print(f"Levels: {args.levels}")
+    print(f"Size: {args.size}")
+    if args.interpret:
+        print("Mode: interpret=True (CPU emulation)")
+    if args.correctness_only:
+        print("Mode: correctness-only (no timing)")
     print()
 
     categories = [args.category] if args.category else None
@@ -63,10 +87,39 @@ def main():
         print("No tasks matched the specified filters.")
         return
 
+    # Override input shapes with parametric sizes
+    for task in tasks:
+        size_shapes = get_size_config(task["name"], args.size)
+        if size_shapes is not None:
+            task["input_shapes"] = size_shapes
+
+    n_trials = 1 if args.correctness_only else args.n_trials
+    n_warmup = 0 if args.correctness_only else args.n_warmup
+
     print(f"Running {len(tasks)} tasks...\n")
-    results = evaluate_suite(
-        tasks, n_trials=args.n_trials, n_warmup=args.n_warmup
-    )
+    results = []
+    for task in tasks:
+        result = evaluate_kernel(
+            pallas_fn=task["pallas_fn"],
+            baseline_fn=task["baseline_fn"],
+            input_shapes=task["input_shapes"],
+            task_name=task.get("name", "unnamed"),
+            dtype=task.get("dtype", "float32"),
+            n_correctness=5,
+            n_warmup=n_warmup,
+            n_trials=n_trials,
+        )
+        results.append(result)
+        status = "PASS" if result.correct else "FAIL"
+        if args.correctness_only:
+            print(f"  [{status}] {result.task_name}")
+        else:
+            print(
+                f"  [{status}] {result.task_name}: "
+                f"speedup={result.speedup:.2f}x "
+                f"(baseline={result.baseline_time_ms:.3f}ms, "
+                f"kernel={result.kernel_time_ms:.3f}ms)"
+            )
 
     summary = results_summary(results)
     print(f"\n{'='*60}")
@@ -94,7 +147,9 @@ def main():
             "backend": backend,
             "devices": [str(d) for d in jax.devices()],
             "levels": args.levels,
-            "n_trials": args.n_trials,
+            "size": args.size,
+            "interpret": args.interpret,
+            "n_trials": n_trials,
         },
         "summary": summary,
         "tasks": [
@@ -113,6 +168,24 @@ def main():
     with open(output_path, "w") as f:
         json.dump(output_data, f, indent=2)
     print(f"\nResults saved to: {output_path}")
+
+    # Generate benchmark-action compatible JSON if requested
+    if args.pytest_benchmark_json:
+        bench_entries = []
+        for r in results:
+            bench_entries.append({
+                "name": r.task_name,
+                "unit": "ms",
+                "value": r.kernel_time_ms,
+                "extra": (
+                    f"baseline={r.baseline_time_ms:.3f}ms, "
+                    f"speedup={r.speedup:.2f}x, "
+                    f"correct={r.correct}"
+                ),
+            })
+        with open(args.pytest_benchmark_json, "w") as f:
+            json.dump(bench_entries, f, indent=2)
+        print(f"Benchmark JSON saved to: {args.pytest_benchmark_json}")
 
 
 if __name__ == "__main__":

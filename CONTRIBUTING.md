@@ -13,6 +13,24 @@ We welcome contributions! Here's how to get involved.
    - `level`: 1, 2, or 3
 3. Add a corresponding JAX baseline in `pallasbench/baselines/jax_baseline.py`
 4. Register the task in `pallasbench/tasks.py`
+5. Add provenance info in `pallasbench/provenance.py` with `source`, `reference`, `description`, and `domain`
+6. Add SMALL/MEDIUM/LARGE size configs in `pallasbench/sizes.py`
+
+## Task Provenance Requirements
+
+Every task MUST trace to an official or well-documented source:
+
+- **Preferred**: Official JAX/Pallas docs, openxla/tokamax, MaxText, Keras guides
+- **Accepted**: Published papers, well-documented open-source projects with stars/citations
+- **Not accepted**: Arbitrary implementations without external reference
+
+## Parametric Sizes
+
+Each task must define three size configs:
+
+- **SMALL**: Quick CI smoke test (< 1s on CPU)
+- **MEDIUM**: Standard benchmark (default)
+- **LARGE**: Production-scale stress test
 
 ## Task Naming Convention
 
@@ -20,11 +38,21 @@ We welcome contributions! Here's how to get involved.
 - Level 2: `L2/{fused_ops}` (e.g., `L2/matmul_relu`, `L2/rmsnorm_residual`)
 - Level 3: `L3/{architecture}` (e.g., `L3/flash_attention`)
 
+## Testing Your Changes
+
+```bash
+# Quick correctness check (CPU, no hardware needed)
+python scripts/run_benchmark.py --levels 1 2 3 --size SMALL --interpret --correctness-only
+
+# Full benchmark (requires GPU or TPU)
+python scripts/run_benchmark.py --levels 1 2 3 --size MEDIUM
+```
+
 ## Submitting Results
 
 Run the benchmark on your hardware and submit the JSON output:
 ```bash
-python scripts/run_benchmark.py --levels 1 2 3
+python scripts/run_benchmark.py --levels 1 2 3 --size MEDIUM
 ```
 
 Include in your PR:

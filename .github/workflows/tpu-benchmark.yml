@@ -1,0 +1,71 @@
+name: TPU Performance Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      size:
+        description: 'Benchmark size (SMALL, MEDIUM, LARGE)'
+        required: true
+        default: 'MEDIUM'
+        type: choice
+        options: [SMALL, MEDIUM, LARGE]
+      levels:
+        description: 'Levels to benchmark (space-separated)'
+        required: true
+        default: '1 2 3'
+      tpu_type:
+        description: 'TPU type'
+        required: true
+        default: 'v5e-1'
+        type: choice
+        options: [v4-8, v5e-1, v5e-4, v6-1]
+
+jobs:
+  benchmark:
+    runs-on: [self-hosted, tpu, "${{ inputs.tpu_type }}"]
+    name: TPU benchmark (${{ inputs.tpu_type }}, ${{ inputs.size }})
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install JAX (TPU)
+        run: |
+          pip install -e ".[tpu,dev]"
+
+      - name: Verify TPU
+        run: |
+          python -c "import jax; print(f'Backend: {jax.default_backend()}'); print(f'Devices: {jax.devices()}')"
+
+      - name: Run benchmark
+        run: |
+          python scripts/run_benchmark.py \
+            --levels ${{ inputs.levels }} \
+            --size ${{ inputs.size }} \
+            --n-trials 100 \
+            --n-warmup 20 \
+            --output-dir results/ \
+            --pytest-benchmark-json results/benchmark.json
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: PallasBench TPU ${{ inputs.tpu_type }} (${{ inputs.size }})
+          tool: 'customSmallerIsBetter'
+          output-file-path: results/benchmark.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: true
+          auto-push: true
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tpu-benchmark-${{ inputs.tpu_type }}-${{ inputs.size }}
+          path: results/*.json
