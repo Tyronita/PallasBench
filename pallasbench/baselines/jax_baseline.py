@@ -180,6 +180,11 @@ def jax_one_hot(indices: jax.Array) -> jax.Array:
     return jax.nn.one_hot(indices, 1024, dtype=jnp.float32)
 
 
+@jax.jit
+def jax_nucleotide_onehot(seq: jax.Array) -> jax.Array:
+    return jax.nn.one_hot(seq, 4, dtype=jnp.float32)
+
+
 # ---------------------------------------------------------------------------
 # Level 2: Fusion patterns
 # ---------------------------------------------------------------------------
@@ -253,6 +258,23 @@ def jax_sigmoid_bce(logits: jax.Array, targets: jax.Array) -> jax.Array:
     return loss - targets * logits + targets * loss
 
 
+@jax.jit
+def jax_pwm_scan(seq_onehot: jax.Array, pwm: jax.Array) -> jax.Array:
+    motif_len = pwm.shape[1]
+    seq_len = seq_onehot.shape[0]
+    out_len = seq_len - motif_len + 1
+    scores = jnp.zeros(out_len, dtype=seq_onehot.dtype)
+    for pos in range(motif_len):
+        scores = scores + jnp.sum(seq_onehot[pos:pos + out_len, :] * pwm[:, pos][None, :], axis=-1)
+    return scores
+
+
+@jax.jit
+def jax_pairwise_distance(x: jax.Array) -> jax.Array:
+    diff = x[:, None, :] - x[None, :, :]
+    return jnp.sqrt(jnp.sum(diff * diff, axis=-1) + 1e-8)
+
+
 # ---------------------------------------------------------------------------
 # Level 3: Architecture components
 # ---------------------------------------------------------------------------
@@ -285,6 +307,18 @@ def jax_gated_mlp(
     up = x @ w_up
     hidden = gate * up
     return hidden @ w_down
+
+
+@jax.jit
+def jax_triangle_update(pair: jax.Array, mask: jax.Array) -> jax.Array:
+    n, _, c = pair.shape
+    left_proj = pair * mask[:, :, None]
+    right_proj = pair * mask[:, :, None]
+    left_t = left_proj.transpose(2, 0, 1)
+    right_t = right_proj.transpose(2, 0, 1)
+    update = jnp.sum(left_t[:, :, :, None] * right_t[:, None, :, :], axis=2)
+    update = update.transpose(1, 2, 0)
+    return pair + update
 
 
 @jax.jit

@@ -12,4 +12,6 @@ from pallasbench.kernels.level2 import (
     qk_softmax,
     fused_softmax_cross_entropy,
     sigmoid_bce,
+    pwm_scan,
+    pairwise_distance,
 )

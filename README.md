@@ -32,7 +32,7 @@
 | [KernelBench-v2](https://github.com/Lossfunk/KernelBench-v2) | 250+ | CUDA, Triton | NVIDIA GPU | `fast_p` | 2025 |
 | [KernelBench-X](https://github.com/BonnieW05/KernelBenchX) | 176 | Triton | NVIDIA GPU (6 cards) | Call/Exe/Perf | 2025 |
 | [MultiKernelBench](https://github.com/wzzll123/MultiKernelBench) | 285 | CUDA, Triton, AscendC, TileLang, Pallas, SYCL | GPU, NPU, TPU | Compile@k, Pass@k | 2025 |
-| **PallasBench** (this work) | **38** | **Pallas (JAX)** | **CPU + TPU + GPU** | **`fast_p`** | **2026** |
+| **PallasBench** (this work) | **42** | **Pallas (JAX)** | **CPU + TPU + GPU** | **`fast_p`** | **2026** |
 
 ---
 
@@ -42,7 +42,7 @@ Every PallasBench task traces to an official or well-documented source. This tab
 
 | Task | Source | Domain |
 |------|--------|--------|
-| **Level 1: Single Operators (27 tasks)** | | |
+| **Level 1: Single Operators (28 tasks)** | | |
 | `L1/relu` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — Pallas quickstart | JAX Core |
 | `L1/gelu` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/quickstart.html) — transcendental kernel | JAX Core |
 | `L1/silu` | [openxla/tokamax](https://github.com/openxla/tokamax) — gated_linear_unit SiLU gate | OpenXLA |
@@ -69,7 +69,8 @@ Every PallasBench task traces to an official or well-documented source. This tab
 | `L1/cosine_sim` | [jax-ml/jax](https://jax.readthedocs.io/en/latest/jax.numpy.html) — embedding similarity | JAX Core |
 | `L1/embedding_lookup` | [jax-ml/jax](https://docs.jax.dev/en/latest/pallas/tpu/sparsecore.html) — SparseCore gather | JAX Core |
 | `L1/one_hot` | [jax-ml/jax](https://jax.readthedocs.io/en/latest/_autosummary/jax.nn.one_hot.html) — label prep | JAX Core |
-| **Level 2: Fusion Patterns (11 tasks)** | | |
+| `L1/nucleotide_onehot` | [google-deepmind/deepmind-research](https://deepwiki.com/google-deepmind/deepmind-research/2.6-enformer) — Enformer DNA encoding | Genomics |
+| **Level 2: Fusion Patterns (13 tasks)** | | |
 | `L2/matmul_relu` | [keras-team/keras-io](https://keras.io/guides/define_custom_kernel/) — FusedDense | Keras |
 | `L2/matmul_gelu` | [keras-team/keras-io](https://keras.io/guides/define_custom_kernel/) — FusedDense+GELU | Keras |
 | `L2/matmul_silu` | [openxla/tokamax](https://github.com/openxla/tokamax) — gated_linear_unit gate | OpenXLA |
@@ -81,11 +82,14 @@ Every PallasBench task traces to an official or well-documented source. This tab
 | `L2/qk_softmax` | [jax-ml/jax](https://github.com/jax-ml/jax/blob/main/jax/experimental/pallas/ops/tpu/flash_attention.py) — QK^T+softmax | JAX Core |
 | `L2/fused_softmax_cross_entropy` | [openxla/tokamax](https://github.com/openxla/tokamax) — linear_softmax_cross_entropy_loss | OpenXLA |
 | `L2/sigmoid_bce` | [jax-ml/jax](https://jax.readthedocs.io/) — numerically stable BCE | JAX Core |
-| **Level 3: Architecture Components (4 tasks)** | | |
+| `L2/pwm_scan` | [google-deepmind/deepmind-research](https://deepwiki.com/google-deepmind/deepmind-research/2.6-enformer) — Enformer PWM motif scanning | Genomics |
+| `L2/pairwise_distance` | [google-deepmind/alphafold3](https://github.com/google-deepmind/alphafold3) — structural distance maps | Genomics |
+| **Level 3: Architecture Components (5 tasks)** | | |
 | `L3/flash_attention` | [jax-ml/jax](https://github.com/jax-ml/jax/blob/main/jax/experimental/pallas/ops/tpu/flash_attention.py) — official TPU kernel | JAX Core |
 | `L3/multi_head_attention` | [AI-Hypercomputer/maxtext](https://maxtext.readthedocs.io/) — splash attention | Google AI |
 | `L3/gated_mlp` | [openxla/tokamax](https://github.com/openxla/tokamax) — gated_linear_unit full block | OpenXLA |
 | `L3/transformer_block` | [AI-Hypercomputer/maxtext](https://github.com/AI-Hypercomputer/maxtext) — pre-norm block | Google AI |
+| `L3/triangle_update` | [google-deepmind/alphafold3](https://github.com/google-deepmind/alphafold3) — Pairformer triangle multiplication | Genomics |
 
 ### Source Domains
 
@@ -97,6 +101,7 @@ Every PallasBench task traces to an official or well-documented source. This tab
 | **Google AI** | AI-Hypercomputer/maxtext (training framework) | 3 |
 | **Community** | pallas-forge (auto-tuned kernels) | 2 |
 | **Scientific AI** | google-deepmind/alphafold3 (Evoformer patterns) | 1 |
+| **Genomics** | google-deepmind/alphafold3, deepmind-research/Enformer | 4 |
 
 ---
 
@@ -122,36 +127,36 @@ python scripts/run_benchmark.py --levels 1 2 3 --size LARGE
 
 PallasBench includes four GitHub Actions workflows for automated evaluation:
 
-### 1. CPU Correctness (`cpu-correctness.yml`)
-Runs on every push/PR. Tests all kernels using `interpret=True` (CPU emulation of Pallas) with SMALL sizes.
+### 1. CPU Correctness (`cpu-correctness.yml`) — **Mandatory**
+Runs on every push/PR to `main`/`master`. Tests all kernels using `interpret=True` (CPU emulation of Pallas) with SMALL sizes.
 
 - **Runners**: `ubuntu-latest`, `macos-latest` (multi-OS matrix)
 - **Python**: 3.11, 3.12 (multi-version matrix)
 - **No hardware required**: uses JAX CPU backend with Pallas interpret mode
 
-### 2. GPU Performance Benchmark (`gpu-benchmark.yml`)
-Manual trigger (`workflow_dispatch`) for on-demand GPU benchmarking.
+### 2. GPU Performance Benchmark (`gpu-benchmark.yml`) — **Mandatory + On-demand**
+Runs automatically on push to `main`/`master` when kernel code changes, plus manual `workflow_dispatch`.
 
 - **Runner**: self-hosted GPU (Ampere+ recommended for Pallas GPU, CC 8.0+)
 - **Scorer**: `benchmark-action/github-action-benchmark` with configurable alert threshold
 - **Alert**: PR comments on regression, workflow failure if threshold exceeded
 
-### 3. TPU Performance Benchmark (`tpu-benchmark.yml`)
-Manual trigger for TPU benchmarking on self-hosted runners.
+### 3. TPU Performance Benchmark (`tpu-benchmark.yml`) — **Mandatory + On-demand**
+Runs automatically on push to `main`/`master` when kernel code changes, plus manual `workflow_dispatch`.
 
 - **Runner**: self-hosted TPU (v4-8, v5e-1, v5e-4, v6-1)
 - **Provisioning**: via [terraform-google-github-actions-runners](https://github.com/terraform-google-modules/terraform-google-github-actions-runners)
 - **Scorer**: same `benchmark-action` integration
 
-### 4. CI Scorer (`ci-scorer.yml`)
-Runs on every PR that touches kernel code. Posts a score report comment:
+### 4. CI Scorer (`ci-scorer.yml`) — **Mandatory**
+Runs on every push/PR that touches kernel code. Posts a score report comment:
 
 ```
 ## PallasBench CI Score Report
 | Metric              | Value |
 |---------------------|-------|
-| Total Tasks         | 38    |
-| Correct             | 36    |
+| Total Tasks         | 42    |
+| Correct             | 40    |
 | fast_0 (correctness)| 94.7% |
 | fast_1 (faster)     | 78.9% |
 ```
@@ -251,13 +256,13 @@ PallasBench/
 │   ├── utils.py                   # Timing, correctness, RNG
 │   ├── provenance.py              # Task provenance registry
 │   ├── sizes.py                   # Parametric SMALL/MEDIUM/LARGE configs
-│   ├── tasks.py                   # Task registry (38 tasks)
+│   ├── tasks.py                   # Task registry (42 tasks)
 │   ├── kernels/
-│   │   ├── level1/                # 27 single-operator tasks
-│   │   ├── level2/                # 11 fusion tasks
-│   │   └── level3/                # 4 architecture tasks (incl. transformer block)
+│   │   ├── level1/                # 28 single-operator tasks
+│   │   ├── level2/                # 13 fusion tasks
+│   │   └── level3/                # 5 architecture tasks (incl. transformer block, triangle update)
 │   └── baselines/
-│       └── jax_baseline.py        # Pure JAX reference impls (38 functions)
+│       └── jax_baseline.py        # Pure JAX reference impls (42 functions)
 ├── paper/
 │   └── PAPER.md
 ├── results/

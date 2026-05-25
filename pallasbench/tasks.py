@@ -11,15 +11,18 @@ from pallasbench.kernels.level1 import (
     exp_op, log_op, add_op, multiply_op, rsqrt_op, clamp,
     cross_entropy, mse_loss, cosine_sim,
     embedding_lookup, one_hot,
+    nucleotide_onehot,
 )
 from pallasbench.kernels.level2 import (
     matmul_relu, matmul_gelu, matmul_silu,
     rmsnorm_residual, layernorm_residual,
     swiglu, geglu, linear_bias_relu,
     qk_softmax, fused_softmax_cross_entropy, sigmoid_bce,
+    pwm_scan, pairwise_distance,
 )
 from pallasbench.kernels.level3 import (
     flash_attention, multi_head_attention, gated_mlp, transformer_block,
+    triangle_update,
 )
 from pallasbench.baselines import jax_baseline
 
@@ -71,6 +74,9 @@ TASK_REGISTRY: list[dict] = [
     {"name": "L1/embedding_lookup", "level": 1, "category": "index", "pallas_fn": embedding_lookup.pallas_kernel, "baseline_fn": jax_baseline.jax_embedding_lookup, "input_shapes": embedding_lookup.input_shapes},
     {"name": "L1/one_hot",          "level": 1, "category": "index", "pallas_fn": one_hot.pallas_kernel,          "baseline_fn": jax_baseline.jax_one_hot,          "input_shapes": one_hot.input_shapes},
 
+    # --- Genomics ---
+    {"name": "L1/nucleotide_onehot", "level": 1, "category": "genomics", "pallas_fn": nucleotide_onehot.pallas_kernel, "baseline_fn": jax_baseline.jax_nucleotide_onehot, "input_shapes": nucleotide_onehot.input_shapes},
+
     # =========================================================================
     # Level 2: Fusion patterns
     # =========================================================================
@@ -87,6 +93,10 @@ TASK_REGISTRY: list[dict] = [
     {"name": "L2/fused_softmax_cross_entropy","level": 2, "category": "loss_fusion",        "pallas_fn": fused_softmax_cross_entropy.pallas_kernel,"baseline_fn": jax_baseline.jax_fused_softmax_cross_entropy,"input_shapes": fused_softmax_cross_entropy.input_shapes},
     {"name": "L2/sigmoid_bce",              "level": 2, "category": "loss_fusion",          "pallas_fn": sigmoid_bce.pallas_kernel,               "baseline_fn": jax_baseline.jax_sigmoid_bce,               "input_shapes": sigmoid_bce.input_shapes},
 
+    # --- Genomics ---
+    {"name": "L2/pwm_scan",                "level": 2, "category": "genomics",            "pallas_fn": pwm_scan.pallas_kernel,                  "baseline_fn": jax_baseline.jax_pwm_scan,                  "input_shapes": pwm_scan.input_shapes},
+    {"name": "L2/pairwise_distance",       "level": 2, "category": "genomics",            "pallas_fn": pairwise_distance.pallas_kernel,          "baseline_fn": jax_baseline.jax_pairwise_distance,         "input_shapes": pairwise_distance.input_shapes},
+
     # =========================================================================
     # Level 3: Architecture components
     # =========================================================================
@@ -95,6 +105,9 @@ TASK_REGISTRY: list[dict] = [
     {"name": "L3/multi_head_attention", "level": 3, "category": "attention",  "pallas_fn": multi_head_attention.pallas_kernel, "baseline_fn": jax_baseline.jax_multi_head_attention, "input_shapes": multi_head_attention.input_shapes},
     {"name": "L3/gated_mlp",           "level": 3, "category": "mlp",        "pallas_fn": gated_mlp.pallas_kernel,            "baseline_fn": jax_baseline.jax_gated_mlp,            "input_shapes": gated_mlp.input_shapes},
     {"name": "L3/transformer_block",    "level": 3, "category": "full_model", "pallas_fn": transformer_block.pallas_kernel,    "baseline_fn": jax_baseline.jax_transformer_block,    "input_shapes": transformer_block.input_shapes},
+
+    # --- Genomics ---
+    {"name": "L3/triangle_update",      "level": 3, "category": "genomics",   "pallas_fn": triangle_update.pallas_kernel,      "baseline_fn": jax_baseline.jax_triangle_update,      "input_shapes": triangle_update.input_shapes},
 ]
 
 

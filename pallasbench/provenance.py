@@ -176,6 +176,12 @@ PROVENANCE: dict[str, dict] = {
         "description": "One-hot encoding for label preparation",
         "domain": "JAX Core",
     },
+    "L1/nucleotide_onehot": {
+        "source": "google-deepmind/deepmind-research",
+        "reference": "https://deepwiki.com/google-deepmind/deepmind-research/2.6-enformer",
+        "description": "DNA nucleotide one-hot encoding (A/C/G/T -> 4-channel) from Enformer input pipeline",
+        "domain": "Genomics",
+    },
 
     # =========================================================================
     # Level 2: Fusion Patterns
@@ -246,6 +252,18 @@ PROVENANCE: dict[str, dict] = {
         "reference": "https://jax.readthedocs.io/en/latest/jax.numpy.html",
         "description": "Numerically stable fused sigmoid + binary cross-entropy",
         "domain": "JAX Core",
+    },
+    "L2/pwm_scan": {
+        "source": "google-deepmind/deepmind-research",
+        "reference": "https://deepwiki.com/google-deepmind/deepmind-research/2.6-enformer",
+        "description": "Position Weight Matrix motif scanning — Enformer conv tower / PWMScan (Bioinformatics 2018)",
+        "domain": "Genomics",
+    },
+    "L2/pairwise_distance": {
+        "source": "google-deepmind/alphafold3",
+        "reference": "https://github.com/google-deepmind/alphafold3",
+        "description": "Pairwise Euclidean distance matrix for structural biology distance maps",
+        "domain": "Genomics",
     },
 
     # =========================================================================

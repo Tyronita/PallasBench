@@ -1,6 +1,11 @@
 name: GPU Performance Benchmark
 
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'pallasbench/kernels/**'
+      - 'pallasbench/baselines/**'
   workflow_dispatch:
     inputs:
       size:
@@ -18,10 +23,15 @@ on:
         required: false
         default: '150'
 
+env:
+  BENCH_SIZE: ${{ inputs.size || 'MEDIUM' }}
+  BENCH_LEVELS: ${{ inputs.levels || '1 2 3' }}
+  BENCH_ALERT: ${{ inputs.alert_threshold || '150' }}
+
 jobs:
   benchmark:
     runs-on: [self-hosted, gpu]
-    name: GPU benchmark (${{ inputs.size }})
+    name: GPU benchmark (${{ inputs.size || 'MEDIUM' }})
 
     steps:
       - uses: actions/checkout@v4
@@ -42,8 +52,8 @@ jobs:
       - name: Run benchmark
         run: |
           python scripts/run_benchmark.py \
-            --levels ${{ inputs.levels }} \
-            --size ${{ inputs.size }} \
+            --levels ${{ env.BENCH_LEVELS }} \
+            --size ${{ env.BENCH_SIZE }} \
             --n-trials 100 \
             --n-warmup 20 \
             --output-dir results/ \
@@ -52,11 +62,11 @@ jobs:
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: PallasBench GPU (${{ inputs.size }})
+          name: PallasBench GPU (${{ env.BENCH_SIZE }})
           tool: 'customSmallerIsBetter'
           output-file-path: results/benchmark.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          alert-threshold: '${{ inputs.alert_threshold }}%'
+          alert-threshold: '${{ env.BENCH_ALERT }}%'
           comment-on-alert: true
           fail-on-alert: true
           auto-push: true
@@ -65,5 +75,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: gpu-benchmark-${{ inputs.size }}
+          name: gpu-benchmark-${{ env.BENCH_SIZE }}
           path: results/*.json

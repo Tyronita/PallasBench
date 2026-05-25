@@ -5,4 +5,5 @@ from pallasbench.kernels.level3 import (
     multi_head_attention,
     gated_mlp,
     transformer_block,
+    triangle_update,
 )

@@ -27,4 +27,5 @@ from pallasbench.kernels.level1 import (
     cosine_sim,
     embedding_lookup,
     one_hot,
+    nucleotide_onehot,
 )

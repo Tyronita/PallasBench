@@ -1,6 +1,11 @@
 name: TPU Performance Benchmark
 
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'pallasbench/kernels/**'
+      - 'pallasbench/baselines/**'
   workflow_dispatch:
     inputs:
       size:
@@ -20,10 +25,15 @@ on:
         type: choice
         options: [v4-8, v5e-1, v5e-4, v6-1]
 
+env:
+  BENCH_SIZE: ${{ inputs.size || 'MEDIUM' }}
+  BENCH_LEVELS: ${{ inputs.levels || '1 2 3' }}
+  TPU_TYPE: ${{ inputs.tpu_type || 'v5e-1' }}
+
 jobs:
   benchmark:
-    runs-on: [self-hosted, tpu, "${{ inputs.tpu_type }}"]
-    name: TPU benchmark (${{ inputs.tpu_type }}, ${{ inputs.size }})
+    runs-on: [self-hosted, tpu, "${{ inputs.tpu_type || 'v5e-1' }}"]
+    name: TPU benchmark (${{ inputs.tpu_type || 'v5e-1' }}, ${{ inputs.size || 'MEDIUM' }})
 
     steps:
       - uses: actions/checkout@v4
@@ -44,8 +54,8 @@ jobs:
       - name: Run benchmark
         run: |
           python scripts/run_benchmark.py \
-            --levels ${{ inputs.levels }} \
-            --size ${{ inputs.size }} \
+            --levels ${{ env.BENCH_LEVELS }} \
+            --size ${{ env.BENCH_SIZE }} \
             --n-trials 100 \
             --n-warmup 20 \
             --output-dir results/ \
@@ -54,7 +64,7 @@ jobs:
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: PallasBench TPU ${{ inputs.tpu_type }} (${{ inputs.size }})
+          name: PallasBench TPU ${{ env.TPU_TYPE }} (${{ env.BENCH_SIZE }})
           tool: 'customSmallerIsBetter'
           output-file-path: results/benchmark.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -67,5 +77,5 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tpu-benchmark-${{ inputs.tpu_type }}-${{ inputs.size }}
+          name: tpu-benchmark-${{ env.TPU_TYPE }}-${{ env.BENCH_SIZE }}
           path: results/*.json

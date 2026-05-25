@@ -1,8 +1,14 @@
 name: CI Scorer
 
 on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'pallasbench/**'
+      - 'scripts/**'
+      - 'pyproject.toml'
   pull_request:
-    branches: [main]
+    branches: [main, master]
     paths:
       - 'pallasbench/**'
       - 'scripts/**'
