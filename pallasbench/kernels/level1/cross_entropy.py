@@ -26,7 +26,8 @@ def _cross_entropy_kernel(logits_ref, labels_ref, o_ref):
 def pallas_cross_entropy(logits: jax.Array, labels: jax.Array) -> jax.Array:
     n_rows = logits.shape[0]
     n_cols = logits.shape[1]
-    block_rows = min(128, n_rows)
+    MAX_BLOCK = 65536
+    block_rows = min(n_rows, MAX_BLOCK)
     grid_size = n_rows // block_rows
 
     return pl.pallas_call(

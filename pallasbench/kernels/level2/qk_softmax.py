@@ -25,18 +25,18 @@ def _qk_softmax_kernel(q_ref, k_ref, o_ref):
 
 def pallas_qk_softmax(q: jax.Array, k: jax.Array) -> jax.Array:
     seq_len, d_model = q.shape
-    block_q = min(128, seq_len)
-    grid_size = seq_len // block_q
+    BLOCK_Q = min(seq_len, 128)
+    grid_size = seq_len // BLOCK_Q
 
     return pl.pallas_call(
         _qk_softmax_kernel,
         out_shape=jax.ShapeDtypeStruct((seq_len, seq_len), q.dtype),
         grid=(grid_size,),
         in_specs=[
-            pl.BlockSpec((block_q, d_model), lambda i: (i, 0)),
+            pl.BlockSpec((BLOCK_Q, d_model), lambda i: (i, 0)),
             pl.BlockSpec((seq_len, d_model), lambda i: (0, 0)),
         ],
-        out_specs=pl.BlockSpec((block_q, seq_len), lambda i: (i, 0)),
+        out_specs=pl.BlockSpec((BLOCK_Q, seq_len), lambda i: (i, 0)),
     )(q, k)
 
 

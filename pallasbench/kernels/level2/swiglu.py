@@ -28,18 +28,18 @@ def pallas_swiglu(
 ) -> jax.Array:
     m, k = x.shape
     _, n = w_gate.shape
-    bm = min(256, m)
+    BLOCK_M = min(m, 128)
 
     return pl.pallas_call(
         _swiglu_kernel,
         out_shape=jax.ShapeDtypeStruct((m, n), x.dtype),
-        grid=(m // bm,),
+        grid=(m // BLOCK_M,),
         in_specs=[
-            pl.BlockSpec((bm, k), lambda i: (i, 0)),
+            pl.BlockSpec((BLOCK_M, k), lambda i: (i, 0)),
             pl.BlockSpec((k, n), lambda i: (0, 0)),
             pl.BlockSpec((k, n), lambda i: (0, 0)),
         ],
-        out_specs=pl.BlockSpec((bm, n), lambda i: (i, 0)),
+        out_specs=pl.BlockSpec((BLOCK_M, n), lambda i: (i, 0)),
     )(x, w_gate, w_up)
 
 

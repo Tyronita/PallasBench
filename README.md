@@ -326,6 +326,37 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [GPU Porting Report](docs/gpu_porting_report.md) | Porting PallasBench from TPU to GPU, including the block-size clamping fix for Pallas GPU fallback |
+| [Robust Evaluation Report](docs/robust_evaluation_report.md) | Robustness evaluation pipeline with 5 automated filters (compile, correctness, NaN, speedup, import analysis) |
+| [HuggingFace Dataset README](docs/hf_dataset_readme.md) | Details of the `pallasbench-robust` dataset hosted on HuggingFace |
+
+## GPU Porting
+
+The [GPU porting report](docs/gpu_porting_report.md) documents the process of adapting PallasBench's TPU-native kernels for GPU execution. A key fix was the **block-size clamping** workaround: Pallas GPU's `BlockSpec` requires block sizes that divide the corresponding dimension evenly, unlike TPU which accepts any block size. The fix clamps block sizes to `min(block_size, dim_size)` to handle non-divisible dimensions gracefully.
+
+## Robust Evaluation
+
+The [robust evaluation report](docs/robust_evaluation_report.md) introduces 5 automated robustness filters applied to every kernel evaluation:
+
+1. **Compile Filter** — catches Pallas lowering and compilation errors
+2. **Correctness Filter** — numerical equivalence against JAX baselines
+3. **NaN/Inf Filter** — detects numerical instability in kernel outputs
+4. **Speedup Filter** — flags kernels that regress beyond a configurable threshold
+5. **Import Analysis Filter** — static analysis of LLM-generated imports for hallucination detection
+
+## HuggingFace Dataset
+
+The `pallasbench-robust` dataset is available on HuggingFace at:
+[https://huggingface.co/datasets/eoleary/pallasbench-robust](https://huggingface.co/datasets/eoleary/pallasbench-robust)
+
+It contains kernel source code, evaluation results, and provenance metadata for all 42 PallasBench tasks, processed through the robust evaluation pipeline.
+
+---
+
 ## License
 
 Apache License 2.0. See [LICENSE](LICENSE).

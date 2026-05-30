@@ -27,7 +27,8 @@ def pallas_rmsnorm_residual(
 ) -> jax.Array:
     n_rows = x.shape[0]
     n_cols = x.shape[1]
-    block_rows = min(128, n_rows)
+    MAX_BLOCK = 65536
+    block_rows = min(n_rows, MAX_BLOCK)
     grid_size = n_rows // block_rows
 
     return pl.pallas_call(

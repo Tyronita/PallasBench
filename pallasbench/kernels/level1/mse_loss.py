@@ -21,7 +21,8 @@ def _mse_kernel(pred_ref, target_ref, o_ref):
 def pallas_mse_loss(pred: jax.Array, target: jax.Array) -> jax.Array:
     n_rows = pred.shape[0]
     n_cols = pred.shape[1]
-    block_rows = min(256, n_rows)
+    MAX_BLOCK = 65536
+    block_rows = min(n_rows, MAX_BLOCK)
     grid_size = n_rows // block_rows
 
     return pl.pallas_call(

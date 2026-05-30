@@ -19,7 +19,8 @@ def _relu_kernel(x_ref, o_ref):
 
 def pallas_relu(x: jax.Array) -> jax.Array:
     n = x.shape[0]
-    block_size = min(1024, n)
+    MAX_BLOCK = 65536
+    block_size = min(n, MAX_BLOCK)
     grid_size = n // block_size
 
     return pl.pallas_call(

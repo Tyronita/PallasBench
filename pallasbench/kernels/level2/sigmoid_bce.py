@@ -23,7 +23,8 @@ def _sigmoid_bce_kernel(logits_ref, targets_ref, o_ref):
 
 def pallas_sigmoid_bce(logits: jax.Array, targets: jax.Array) -> jax.Array:
     n = logits.shape[0]
-    block_size = min(1024, n)
+    MAX_BLOCK = 65536
+    block_size = min(n, MAX_BLOCK)
     grid_size = n // block_size
 
     return pl.pallas_call(

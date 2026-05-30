@@ -28,19 +28,19 @@ def pallas_gated_mlp(
 ) -> jax.Array:
     m, d_model = x.shape
     _, d_ff = w_gate.shape
-    bm = min(256, m)
+    BLOCK_M = min(m, 128)
 
     return pl.pallas_call(
         _gated_mlp_kernel,
         out_shape=jax.ShapeDtypeStruct((m, d_model), x.dtype),
-        grid=(m // bm,),
+        grid=(m // BLOCK_M,),
         in_specs=[
-            pl.BlockSpec((bm, d_model), lambda i: (i, 0)),
+            pl.BlockSpec((BLOCK_M, d_model), lambda i: (i, 0)),
             pl.BlockSpec((d_model, d_ff), lambda i: (0, 0)),
             pl.BlockSpec((d_model, d_ff), lambda i: (0, 0)),
             pl.BlockSpec((d_ff, d_model), lambda i: (0, 0)),
         ],
-        out_specs=pl.BlockSpec((bm, d_model), lambda i: (i, 0)),
+        out_specs=pl.BlockSpec((BLOCK_M, d_model), lambda i: (i, 0)),
     )(x, w_gate, w_up, w_down)
 
 

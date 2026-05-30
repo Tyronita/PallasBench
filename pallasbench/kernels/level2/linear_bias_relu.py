@@ -21,18 +21,18 @@ def _linear_bias_relu_kernel(x_ref, w_ref, b_ref, o_ref):
 def pallas_linear_bias_relu(x: jax.Array, w: jax.Array, b: jax.Array) -> jax.Array:
     m, k = x.shape
     _, n = w.shape
-    bm = min(512, m)
+    BLOCK_M = min(m, 128)
 
     return pl.pallas_call(
         _linear_bias_relu_kernel,
         out_shape=jax.ShapeDtypeStruct((m, n), x.dtype),
-        grid=(m // bm,),
+        grid=(m // BLOCK_M,),
         in_specs=[
-            pl.BlockSpec((bm, k), lambda i: (i, 0)),
+            pl.BlockSpec((BLOCK_M, k), lambda i: (i, 0)),
             pl.BlockSpec((k, n), lambda i: (0, 0)),
             pl.BlockSpec((n,), lambda i: (0,)),
         ],
-        out_specs=pl.BlockSpec((bm, n), lambda i: (i, 0)),
+        out_specs=pl.BlockSpec((BLOCK_M, n), lambda i: (i, 0)),
     )(x, w, b)
 
 

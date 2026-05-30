@@ -1,0 +1,8 @@
+{
+  "pallasbench-robust": {
+    "description": "PallasBench Robust GPU Kernel Benchmark Dataset",
+    "citation": "@misc{pallasbench_robust_2025,\n  title={Towards Robust Pallas Kernel Benchmarking, Verification, and Optimization on GPU},\n  author={O'Leary, Evan},\n  year={2025},\n  howpublished={HuggingFace Dataset},\n  url={https://huggingface.co/datasets/eoleary/pallasbench-robust}\n}",
+    "homepage": "https://github.com/Tyronita/PallasBench",
+    "license": "apache-2.0"
+  }
+}
