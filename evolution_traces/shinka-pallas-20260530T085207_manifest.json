@@ -1,0 +1,13 @@
+{
+  "experiment_id": "shinka-pallas-20260530T085207",
+  "generations": 3,
+  "population_size": 5,
+  "mutation_rate": 0.8,
+  "crossover_rate": 0.3,
+  "kernels": [
+    "L1/relu",
+    "L1/matmul"
+  ],
+  "status": "placeholder",
+  "message": "Evolution not yet implemented; run_evolution is a stub."
+}

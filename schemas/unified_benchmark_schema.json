@@ -1,0 +1,425 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Tyronita/PallasBench/schemas/unified_benchmark_schema.json",
+  "title": "Unified Cross-Benchmark DSL Schema",
+  "description": "Common JSONL schema for kernel/design benchmarks across CUDA, Triton, Pallas, SystemVerilog, Verilog, and AscendC. Compatible with KernelBook tooling.",
+  "type": "object",
+  "required": [
+    "task_id",
+    "benchmark_source",
+    "language",
+    "task_description",
+    "category",
+    "difficulty_level",
+    "reference_implementation",
+    "generated_source",
+    "correctness",
+    "hardware_context"
+  ],
+  "properties": {
+    "task_id": {
+      "type": "string",
+      "description": "Unique identifier scoped by benchmark source, e.g. 'kernelbench/L1_relu', 'pallasbench/L2_matmul_gelu', 'cvdp/001_counter'",
+      "pattern": "^[a-zA-Z0-9_/.-]+$"
+    },
+    "benchmark_source": {
+      "type": "string",
+      "description": "Origin benchmark name",
+      "enum": [
+        "kernelbench",
+        "pallasbench",
+        "cvdp",
+        "verilog_eval",
+        "multikernelbench",
+        "kernelbench_v2",
+        "kernelbot"
+      ]
+    },
+    "language": {
+      "type": "string",
+      "description": "DSL or hardware description language",
+      "enum": [
+        "cuda",
+        "triton",
+        "pallas",
+        "systemverilog",
+        "verilog",
+        "ascendc"
+      ]
+    },
+    "dsl_version": {
+      "type": "string",
+      "description": "Compiler or runtime version used for evaluation, e.g. 'jax-0.10.1', 'cuda-12.6', 'triton-3.7.0'"
+    },
+    "task_description": {
+      "type": "string",
+      "description": "Human-readable description of the kernel/design task"
+    },
+    "category": {
+      "type": "string",
+      "description": "Functional category of the task",
+      "examples": [
+        "activation",
+        "matmul",
+        "attention",
+        "normalization",
+        "reduce",
+        "elementwise",
+        "loss",
+        "index",
+        "fsm",
+        "counter",
+        "memory",
+        "genomics",
+        "full_model"
+      ]
+    },
+    "difficulty_level": {
+      "type": "integer",
+      "description": "Normalized difficulty level (1=elementary, 2=fusion/pattern, 3=full architecture/component)",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "reference_implementation": {
+      "type": "string",
+      "description": "Source code of the reference/golden implementation"
+    },
+    "generated_source": {
+      "type": "string",
+      "description": "Source code of the LLM-generated or candidate kernel/design under evaluation"
+    },
+    "correctness": {
+      "type": "object",
+      "description": "Correctness verdict and detailed metrics",
+      "required": ["passed", "verification_method"],
+      "properties": {
+        "passed": {
+          "type": "boolean",
+          "description": "Overall correctness verdict"
+        },
+        "max_abs_error": {
+          "type": ["number", "null"],
+          "description": "Maximum absolute error vs reference. null for non-numerical (HDL) verification.",
+          "minimum": 0
+        },
+        "max_rel_error": {
+          "type": ["number", "null"],
+          "description": "Maximum relative error vs reference. null for non-numerical verification.",
+          "minimum": 0
+        },
+        "allclose_atol": {
+          "type": ["number", "null"],
+          "description": "Absolute tolerance used in numerical allclose check. null for HDL.",
+          "minimum": 0
+        },
+        "allclose_rtol": {
+          "type": ["number", "null"],
+          "description": "Relative tolerance used in numerical allclose check. null for HDL.",
+          "minimum": 0
+        },
+        "robustness_filters": {
+          "type": "object",
+          "description": "Results from robustness filter suite (SakanaAI-style)",
+          "properties": {
+            "output_range": { "$ref": "#/definitions/filter_result" },
+            "output_std": { "$ref": "#/definitions/filter_result" },
+            "axes_variation": { "$ref": "#/definitions/filter_result" },
+            "input_impact": { "$ref": "#/definitions/filter_result" },
+            "source_analysis": { "$ref": "#/definitions/filter_result" }
+          },
+          "additionalProperties": true
+        },
+        "verification_method": {
+          "type": "string",
+          "description": "Method used to verify correctness",
+          "enum": [
+            "numerical_allclose",
+            "logical_equivalence",
+            "simulation_match",
+            "formal_verification",
+            "compilation_only"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "performance": {
+      "type": "object",
+      "description": "Performance metrics. Fields are null when not applicable (e.g. speedup for HDL designs).",
+      "properties": {
+        "speedup": {
+          "type": ["number", "null"],
+          "description": "Speedup over baseline: baseline_time_ms / kernel_time_ms. null for HDL."
+        },
+        "baseline_time_ms": {
+          "type": ["number", "null"],
+          "description": "Reference implementation execution time in milliseconds"
+        },
+        "kernel_time_ms": {
+          "type": ["number", "null"],
+          "description": "Kernel/design execution time in milliseconds"
+        },
+        "throughput_gb_s": {
+          "type": ["number", "null"],
+          "description": "Measured throughput in GB/s"
+        },
+        "bandwidth_utilization_pct": {
+          "type": ["number", "null"],
+          "description": "Percentage of peak hardware bandwidth achieved",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "gpu_memory_delta_mb": {
+          "type": ["number", "null"],
+          "description": "GPU memory allocated by the kernel in MB"
+        },
+        "jit_compile_time_seconds": {
+          "type": ["number", "null"],
+          "description": "JIT compilation wall-clock time in seconds. null for HDL."
+        },
+        "wall_time_seconds": {
+          "type": ["number", "null"],
+          "description": "Total end-to-end wall time including compilation in seconds"
+        },
+        "area_um2": {
+          "type": ["number", "null"],
+          "description": "Silicon area in square micrometers (HDL synthesis result)"
+        },
+        "power_mw": {
+          "type": ["number", "null"],
+          "description": "Power consumption in milliwatts (HDL synthesis result)"
+        },
+        "frequency_mhz": {
+          "type": ["number", "null"],
+          "description": "Maximum operating frequency in MHz (HDL synthesis result)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "hardware_context": {
+      "type": "object",
+      "description": "Hardware platform on which the evaluation was run",
+      "properties": {
+        "accelerator": {
+          "type": "string",
+          "description": "GPU/accelerator model name, e.g. 'NVIDIA A100 80GB PCIe', 'NVIDIA L40S'"
+        },
+        "compute_capability": {
+          "type": ["string", "null"],
+          "description": "CUDA compute capability, e.g. '8.0', '8.9'"
+        },
+        "memory_gb": {
+          "type": ["integer", "null"],
+          "description": "GPU memory in GB"
+        },
+        "bandwidth_gb_s": {
+          "type": ["integer", "null"],
+          "description": "Peak memory bandwidth in GB/s"
+        },
+        "sm_count": {
+          "type": ["integer", "null"],
+          "description": "Number of streaming multiprocessors"
+        },
+        "driver_version": {
+          "type": ["string", "null"],
+          "description": "GPU driver version"
+        },
+        "runtime_version": {
+          "type": ["string", "null"],
+          "description": "Runtime or framework version (e.g. JAX, Triton, Icarus Verilog)"
+        },
+        "target_fpga": {
+          "type": ["string", "null"],
+          "description": "Target FPGA part number (for HDL synthesis)"
+        },
+        "target_technology_nm": {
+          "type": ["integer", "null"],
+          "description": "Process technology node in nanometers (for HDL synthesis)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ir_representations": {
+      "type": "object",
+      "description": "DSL-specific intermediate representations captured during compilation. Null/unset when IR is unavailable.",
+      "properties": {
+        "jaxpr": {
+          "type": ["string", "null"],
+          "description": "JAX functional traced IR (Pallas only)"
+        },
+        "stablehlo": {
+          "type": ["string", "null"],
+          "description": "StableHLO MLIR dialect (Pallas/JAX only)"
+        },
+        "triton_mlir": {
+          "type": ["string", "null"],
+          "description": "Triton MLIR intermediate representation (Pallas, Triton)"
+        },
+        "ptx": {
+          "type": ["string", "null"],
+          "description": "PTX assembly output (CUDA, Triton)"
+        },
+        "cubin": {
+          "type": ["string", "null"],
+          "description": "CUBIN binary descriptor (CUDA)"
+        },
+        "ascend_ir": {
+          "type": ["string", "null"],
+          "description": "Ascend IR intermediate representation (AscendC only)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "tiling": {
+      "type": "object",
+      "description": "Tiling and grid configuration (GPU kernels only)",
+      "properties": {
+        "block_shape": {
+          "type": "array",
+          "description": "Block/tile dimensions",
+          "items": { "type": "integer" },
+          "minItems": 1
+        },
+        "grid_shape": {
+          "type": "array",
+          "description": "Grid/launch dimensions",
+          "items": { "type": "integer" },
+          "minItems": 1
+        },
+        "num_blocks": {
+          "type": "integer",
+          "description": "Total number of blocks (product of grid dimensions)"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ncu_profile": {
+      "type": "object",
+      "description": "NVIDIA Nsight Compute profiling data (GPU only)",
+      "properties": {
+        "sm_occupancy": {
+          "type": ["number", "null"],
+          "description": "SM occupancy (0.0 - 1.0)"
+        },
+        "l2_hit_rate": {
+          "type": ["number", "null"],
+          "description": "L2 cache hit rate (0.0 - 1.0)"
+        },
+        "warp_efficiency": {
+          "type": ["number", "null"],
+          "description": "Warp execution efficiency (0.0 - 1.0)"
+        },
+        "arith_intensity": {
+          "type": ["number", "null"],
+          "description": "Arithmetic intensity in FLOP/byte"
+        }
+      },
+      "additionalProperties": true
+    },
+    "hdl_metadata": {
+      "type": "object",
+      "description": "HDL-specific metadata (SystemVerilog, Verilog only)",
+      "properties": {
+        "hdl_type": {
+          "type": "string",
+          "enum": ["systemverilog", "verilog"]
+        },
+        "simulation_tool": {
+          "type": "string",
+          "description": "Simulation tool used, e.g. 'iverilog', 'vcs', 'verilator', 'modelsim'"
+        },
+        "synthesis_tool": {
+          "type": ["string", "null"],
+          "description": "Synthesis tool used, e.g. 'yosys', 'vivado', 'quartus', 'design_compiler'"
+        },
+        "simulation_results": {
+          "type": "object",
+          "description": "Simulation verification results",
+          "properties": {
+            "passed": { "type": "boolean" },
+            "testbench_match": { "type": "boolean" },
+            "coverage_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 100 }
+          },
+          "additionalProperties": true
+        },
+        "synthesis_results": {
+          "type": ["object", "null"],
+          "description": "Synthesis results (after place-and-route)",
+          "properties": {
+            "area_um2": { "type": ["number", "null"] },
+            "power_mw": { "type": ["number", "null"] },
+            "frequency_mhz": { "type": ["number", "null"] },
+            "cell_count": { "type": ["integer", "null"] }
+          },
+          "additionalProperties": true
+        },
+        "testbench_source": {
+          "type": ["string", "null"],
+          "description": "Testbench source code used for verification"
+        }
+      },
+      "additionalProperties": true
+    },
+    "ascendc_metadata": {
+      "type": "object",
+      "description": "AscendC-specific metadata (AscendC only)",
+      "properties": {
+        "ascendc_version": {
+          "type": "string",
+          "description": "AscendC/CANN version"
+        },
+        "target_npu": {
+          "type": "string",
+          "description": "NPU model, e.g. 'Ascend 910B', 'Ascend 310P'"
+        }
+      },
+      "additionalProperties": true
+    },
+    "compilation_pipeline": {
+      "type": "string",
+      "description": "Description of the compilation pipeline, e.g. 'pallas->triton->ptx', 'cuda->ptx->cubin', 'source->simulation'"
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Additional provenance and metadata",
+      "properties": {
+        "original_source_url": {
+          "type": "string",
+          "description": "URL to the original upstream benchmark task"
+        },
+        "evaluation_timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 timestamp of evaluation"
+        },
+        "normalization_version": {
+          "type": "string",
+          "description": "Version of the normalization script that produced this entry"
+        },
+        "generation_model": {
+          "type": ["string", "null"],
+          "description": "LLM model name if the generated_source was produced by an LLM"
+        },
+        "generation_params": {
+          "type": ["object", "null"],
+          "description": "Generation hyperparameters (temperature, top_p, etc.)"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+  "definitions": {
+    "filter_result": {
+      "type": "object",
+      "properties": {
+        "passed": { "type": "boolean" },
+        "value": { "description": "Measured value or description" },
+        "threshold": { "description": "Threshold used for the check" },
+        "reason": { "type": "string" }
+      },
+      "required": ["passed"],
+      "additionalProperties": true
+    }
+  }
+}

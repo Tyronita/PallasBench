@@ -40,6 +40,36 @@ def median_speedup(results: list[BenchmarkResult], correct_only: bool = True) ->
     return float(np.median([r.speedup for r in filtered]))
 
 
+def compute_throughput(total_bytes: float, kernel_time_ms: float) -> float:
+    """Compute memory throughput in GB/s.
+
+    Args:
+        total_bytes: Total bytes read + written by the kernel.
+        kernel_time_ms: Median kernel execution time in milliseconds.
+
+    Returns:
+        Throughput in GB/s, or 0.0 if kernel_time_ms is 0.
+    """
+    if kernel_time_ms <= 0.0:
+        return 0.0
+    return (total_bytes / 1e9) / (kernel_time_ms / 1e3)
+
+
+def bandwidth_utilization(throughput_gbps: float, peak_gbps: float = 2039.0) -> float:
+    """Fraction of peak memory bandwidth achieved.
+
+    Args:
+        throughput_gbps: Measured throughput in GB/s.
+        peak_gbps: Device peak memory bandwidth (default A100 80GB: 2039 GB/s).
+
+    Returns:
+        Utilization as a percentage (0-100).
+    """
+    if peak_gbps <= 0.0:
+        return 0.0
+    return (throughput_gbps / peak_gbps) * 100.0
+
+
 def results_summary(results: list[BenchmarkResult]) -> dict:
     return {
         "total_tasks": len(results),
