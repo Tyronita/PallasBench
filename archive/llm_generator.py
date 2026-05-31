@@ -363,3 +363,26 @@ async def ping_azure(model: str = PRIMARY_MODEL) -> bool:
 # Module-level exports
 GENERATION_MODELS = list(AZURE_DEPLOYMENTS.keys()) if AZURE_DEPLOYMENTS else [PRIMARY_MODEL, FALLBACK_MODEL]
 check_azure_connectivity = ping_azure
+
+
+async def generate_variants_for_problem(
+    problem,
+    n_variants: int = 20,
+    model: str = PRIMARY_MODEL,
+    temperature: float = 0.7,
+) -> list[str]:
+    """Adapter: generate n_variants kernel code strings for a problem.
+    Returns list of code strings (index 0 = seed placeholder, 1..n = LLM variants).
+    """
+    codes = [problem.seed_pallas]  # index 0 = seed
+    sem = asyncio.Semaphore(3)
+
+    async def _one(idx: int) -> str:
+        async with sem:
+            prompt = _build_initial_prompt(problem, strategy_idx=idx, variant_idx=idx)
+            code = await _llm_call(prompt, model=model, temperature=temperature + (idx % 3) * 0.05)
+            return _extract_code(code, problem.name) if code else ""
+
+    results = await asyncio.gather(*[_one(i) for i in range(1, n_variants + 1)])
+    codes.extend(results)
+    return codes

@@ -34,6 +34,7 @@ from tqdm import tqdm
 from .evaluator import evaluate_kernel, evaluate_problem_seed, robustness_filters
 from .llm_generator import (
     generate_all_variants,
+    generate_variants_for_problem,
     ping_azure as check_azure_connectivity,
     PRIMARY_MODEL,
     FALLBACK_MODEL,
