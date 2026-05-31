@@ -12,3 +12,11 @@ venv/
 .ipynb_checkpoints
 results/*.json
 !results/.gitkeep
+# Archive
+archive/__pycache__/
+archive/**/__pycache__/
+results/
+*.log
+.env
+*.pyc
+checkpoints/
