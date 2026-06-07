@@ -89,3 +89,42 @@ torch.compile ≈ jax.jit). Keep `Pallas_Speedup_Native` only as a secondary "vs
 column. On sm_80+ hardware, re-time with native Pallas (no interpret mode) for
 absolute numbers. For L4, score the *embedded hot kernel* (attention/scan/norm), not
 the entire forward pass.
+
+## Future work — multi-DSL tracks and the L4 cliff
+
+The L1→L4 ladder (single op → fused pattern → architecture component → whole model) is
+universal — it's just increasing graph size and decreasing data locality, which is
+hardware physics, not framework-specific. What differs across kernel ecosystems is
+*where the prior-art cliff sits*, and that is dictated by whether a graph compiler sits
+above the kernel language. A future multi-DSL PallasBench (MultiKernelBench-style)
+should set the L4 scoring rule per track accordingly.
+
+| DSL / stack | Layer it occupies | L1/L2 prior art | L4 prior art | Same cliff as Pallas? |
+|-------------|-------------------|-----------------|--------------|-----------------------|
+| **Pallas** (JAX) | leaf kernels under XLA | medium | ~none | — (reference) |
+| **CUDA** | raw, no compiler above | deep | exists (vLLM, FasterTransformer, TensorRT) | no — whole models hand-written |
+| **CUTLASS** | GEMM/epilogue templates | deep (GEMM, fused epilogues) | ~none | steeper — it's a GEMM lib, not a model tool |
+| **Mojo / MAX** | spans kernel **and** graph by design | thin (young) | thin (young) | no cliff by design; scarcity is ecosystem age |
+| **MLX** (Apple) | leaf kernels under MLX graph | thin–medium | ~none | **yes — same cause** |
+| **Metal** (raw, Apple) | raw, no compiler above | deep | exists (llama.cpp Metal, MLX-LM) | no — like CUDA |
+| **MPS / MPSGraph** | tuned primitives + graph | deep (primitives) | ~none | yes — primitive lib |
+
+Two cross-vendor signals worth recording:
+
+1. **The optimized-kernel set converges.** Independently, JAX/Pallas and Apple/MLX
+   ship the *same* hand-tuned leaves: attention, RMSNorm, LayerNorm, RoPE/scan.
+   MLX's built-in `mlx.core.fast.*` (`scaled_dot_product_attention`, `rms_norm`,
+   `layer_norm`, `rope`) ≈ the entire public Pallas catalog. The unit of
+   hand-optimization is the fusible **memory-bound leaf**, regardless of vendor — so
+   L1/L2 of any track should be seeded mostly from those.
+
+2. **The "score the embedded hot kernel, not the full forward pass" rule is specific to
+   compiler-fronted DSLs** (Pallas, MLX, CUTLASS). For raw-language tracks (CUDA,
+   Metal) L4 becomes a *legitimate* whole-model task with real prior art, and should be
+   scored against a real full-model baseline, not the hot-kernel proxy.
+
+Apple-specific caveat for a future MLX track: inference would run on Apple-Silicon
+**unified memory**, which shrinks the classic flash-attention win ("don't materialize
+the N×N scores to VRAM") because there is no separate VRAM to spill to. The
+memory-bound calculus — and therefore which kernels actually show speedups — shifts,
+so an MLX track needs its own baseline calibration rather than reusing T4/A100 numbers.
