@@ -52,9 +52,40 @@ the denominator.
 The 45% → 10% drop between native and compiled baselines **is** the anomaly, and it is
 a benchmark-design issue (which baseline you divide by), not model cheating.
 
+## Caveat: L3/L4 "whole model in Pallas" is partly ill-posed
+
+The survey shows prior-art depth collapsing to 0–1 real-Pallas seeds at L3/L4, and LLM
+correctness collapsing with it (0–1%). This is not only difficulty — it reflects how
+the JAX/XLA stack is *designed to be used*:
+
+- **Pallas is a kernel language, not a model language.** It produces one fused array op
+  with hand-specified tiling/grid/on-chip memory, then hands control back to the XLA
+  graph. It has no mechanism for the control flow, parameter management, or sharding a
+  whole model needs.
+- **XLA already optimizes the model level.** You write the model in `jnp`/`lax` and XLA
+  fuses/schedules the whole graph. You only drop to Pallas at the *leaves* where XLA
+  measurably underperforms.
+- **Those leaves are few and known:** memory-bound patterns — flash attention (avoid
+  materializing the N×N scores), fused norms, and sequential scans (Mamba/Griffin
+  recurrence). That is essentially the entire public Pallas catalog. The rest of a
+  model is compute-bound matmuls that cuBLAS/XLA already run near peak, where a Pallas
+  rewrite only loses to the vendor library.
+- **Economics:** Pallas kernels are hard to write, hardware-specific (good backends are
+  sm_80+ only), and API-churny. Nobody hand-writes ~50 kernels for a ResNet to match
+  what XLA gives for free.
+
+So the realistic L4 target is **"a JAX model with a Pallas attention/scan kernel swapped
+in"** — exactly what MaxText, RecurrentGemma, and AlphaFold actually do — not a whole
+forward pass rewritten in Pallas. Our L4 problems use a JAX reference as the seed and
+ask the LLM to Pallas-ify; the near-zero pass rate is the expected signal that the *hot
+kernel*, not the whole model, is the correct unit of optimization. Treat L4
+`vs_compiled` numbers as "did the LLM find the fusible kernel inside the model," not
+"did it beat XLA on the full model."
+
 ## Recommendation
 
 Report `fast_p` against the **compiled** baseline (the KernelBench convention —
 torch.compile ≈ jax.jit). Keep `Pallas_Speedup_Native` only as a secondary "vs eager"
 column. On sm_80+ hardware, re-time with native Pallas (no interpret mode) for
-absolute numbers.
+absolute numbers. For L4, score the *embedded hot kernel* (attention/scan/norm), not
+the entire forward pass.
