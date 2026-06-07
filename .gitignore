@@ -1,0 +1,12 @@
+# Junk Windows-path jax mirror (accidental)
+C:\\*
+*metashinka_workspace*
+# Checkpoints + large data (canonical copies live on HuggingFace)
+results/*/checkpoints/
+results/**/*.parquet
+results/*.parquet
+results/*.log
+results/ext_logs/
+__pycache__/
+*.pyc
+*.whl
