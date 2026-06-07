@@ -30,6 +30,31 @@ Each problem carries real **GitHub provenance** (`GitHub_URL`) to the JAX/Pallas
 source it was derived from (jax-ml/jax, MaxText, Flax, RecurrentGemma, AlphaFold3,
 EasyDeL, sglang-jax, jax-md, Brax, HuggingFace Transformers, …).
 
+## Survey: difficulty × depth of existing solutions
+
+"Depth of existing solution" = how many seeds ship a real `pallas_call` kernel vs a
+JAX-only reference the LLM must Pallas-ify from scratch. Higher levels have shallower
+prior art (almost no public Pallas kernels for whole models) — and that's exactly
+where LLM correctness drops.
+
+```
+              problems   real-Pallas seeds        LLM       best speedup (mean)
+                          (depth of prior art)   correct    native* | compiled
+ L1 single ops    46     ████████████████░░ 33/46   15%      2.1x   |  0.91x
+ L2 fused         23     ████████░░░░░░░░░░ 11/23   11%      5.4x   |  0.84x
+ L3 components    10     ░░░░░░░░░░░░░░░░░░  0/10    0%      3.5x   |  0.95x
+ L4 full models   25     ▏░░░░░░░░░░░░░░░░░  1/25    1%     17.6x   |  0.93x
+                  ───                       ─────   ───
+                  104    shallow prior art at L3/L4         *native = vs UNJITTED JAX
+```
+
+**Read this honestly:** the big `native` numbers (L4 17.6×) are inflated by an
+unjitted baseline. Against the fair **compiled** baseline every level sits at
+~0.84–0.95× — i.e. on T4 interpret-mode the LLM kernels roughly match but do not beat
+`jax.jit`. Correctness collapses as model depth grows and public Pallas examples
+vanish (L3/L4 ≈ 0–1%). Full integrity audit + top-10 breakdown in
+[ANALYSIS.md](ANALYSIS.md).
+
 ## Target device — IMPORTANT
 
 All runs here were produced on an **NVIDIA Tesla T4 (sm_75, 16 GB)**.
